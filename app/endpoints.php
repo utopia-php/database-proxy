@@ -360,16 +360,7 @@ Http::post('/v1/queries/find')
             $query = new Query($query['method'], $query['attribute'] ?? '', $query['values'] ?? []);
         }
 
-        \var_dump($collection);
-        \var_dump($queries);
-        \var_dump($limit);
-        \var_dump($offset);
-        \var_dump('---');
-
         $output = $adapter->find($collection, $queries, $limit, $offset, $orderAttributes, $orderTypes, $cursor, $cursorDirection, $timeout);
-
-        \var_dump($output);
-        \var_dump('===');
 
         $response->json([
             'output' => $output

@@ -120,7 +120,7 @@ Http::setResource('adapter', function (Request $request, array $adapters) {
     }
 
     if (!empty($statusDefault)) {
-        if($statusDefault === 'true') {
+        if ($statusDefault === 'true') {
             Authorization::setDefaultStatus(true);
         } else {
             Authorization::setDefaultStatus(false);

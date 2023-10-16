@@ -25,7 +25,7 @@ class Assoc extends FrameworkAssoc
         }
 
         $jsonString = \json_encode($value);
-        $jsonStringSize = \strlen($jsonString);
+        $jsonStringSize = \strlen($jsonString ? $jsonString : '');
 
         if ($jsonStringSize > MAX_STRING_SIZE) {
             return false;
