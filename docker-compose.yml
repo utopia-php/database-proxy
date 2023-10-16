@@ -1,0 +1,29 @@
+version: '3.1'
+
+services:
+  tests:
+    container_name: tests
+    image: proxy-dev
+    build:
+      context: .
+    networks:
+      - database
+    volumes:
+      - ./app:/usr/local/app
+    ports:
+      - 8088:80
+    environment:
+      - UTOPIA_DATABASE_PROXY_SECRET
+      - UTOPIA_DATABASE_PROXY_SECRET_CONNECTIONS
+
+  mariadb:
+    image: mariadb:10.7
+    container_name: utopia-mariadb
+    networks:
+      - database
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MARIADB_DATABASE=appwrite
+
+networks:
+  database:
