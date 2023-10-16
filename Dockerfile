@@ -69,8 +69,6 @@ COPY ./app /usr/local/app
 COPY --from=composer /usr/local/src/vendor /usr/local/vendor
 COPY --from=swoole /usr/local/lib/php/extensions/no-debug-non-zts-20200930/swoole.so /usr/local/lib/php/extensions/no-debug-non-zts-20200930/
 
-COPY ./vendor/utopia-php/database/src/Database/Adapter/MariaDB.php /usr/local/vendor/utopia-php/database/src/Database/Adapter/MariaDB.php
-
 RUN echo extension=swoole.so >> /usr/local/etc/php/conf.d/swoole.ini
 
 EXPOSE 80
