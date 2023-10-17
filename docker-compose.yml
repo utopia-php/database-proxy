@@ -13,14 +13,19 @@ services:
     ports:
       - 8088:80
     environment:
+      - UTOPIA_DATABASE_PROXY_ENV
       - UTOPIA_DATABASE_PROXY_SECRET
       - UTOPIA_DATABASE_PROXY_SECRET_CONNECTIONS
+      - UTOPIA_DATABASE_PROXY_LOGGING_PROVIDER
+      - UTOPIA_DATABASE_PROXY_LOGGING_CONFIG
 
   mariadb:
     image: mariadb:10.7
     container_name: utopia-mariadb
     networks:
       - database
+    ports:
+      - 8100:3306
     environment:
       - MYSQL_ROOT_PASSWORD=password
       - MARIADB_DATABASE=appwrite

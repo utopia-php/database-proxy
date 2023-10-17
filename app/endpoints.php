@@ -4,19 +4,20 @@ use Utopia\Database\Adapter;
 use Utopia\Database\Database;
 use Utopia\Database\Document;
 use Utopia\Database\Query;
-use Utopia\DatabaseProxy\Validator\Assoc;
 use Utopia\Http\Http;
 use Utopia\Http\Response;
 use Utopia\Http\Validator\ArrayList;
+use Utopia\Http\Validator\Assoc;
 use Utopia\Http\Validator\Boolean;
 use Utopia\Http\Validator\FloatValidator;
 use Utopia\Http\Validator\Integer;
 use Utopia\Http\Validator\Text;
 
-const MAX_ARRAY_SIZE = 100000;
-const MAX_STRING_SIZE = 20 * 1024 * 1024; // 20 MB
-
-// TODO: Do proper methods. Currently all is post
+Http::post('/mock/error')
+    ->groups(['api'])
+    ->action(function () {
+        throw new Exception('Mock error', 500);
+    });
 
 Http::post('/v1/queries/ping')
     ->groups(['api'])
@@ -73,8 +74,8 @@ Http::post('/v1/queries/delete')
 Http::post('/v1/queries/createCollection')
     ->groups(['api'])
     ->param('name', '', new Text(MAX_STRING_SIZE, 0))
-    ->param('attributes', [], new ArrayList(new Assoc(), MAX_ARRAY_SIZE), '', true)
-    ->param('indexes', [], new ArrayList(new Assoc(), MAX_ARRAY_SIZE), '', true)
+    ->param('attributes', [], new ArrayList(new Assoc(MAX_STRING_SIZE), MAX_ARRAY_SIZE), '', true)
+    ->param('indexes', [], new ArrayList(new Assoc(MAX_STRING_SIZE), MAX_ARRAY_SIZE), '', true)
     ->inject('adapter')
     ->inject('response')
     ->action(function (string $name, array $attributes, array $indexes, Adapter $adapter, Response $response) {
@@ -234,7 +235,7 @@ Http::post('/v1/queries/getSizeOfCollection')
 
 Http::post('/v1/queries/getCountOfAttributes')
     ->groups(['api'])
-    ->param('collection', '', new Assoc())
+    ->param('collection', '', new Assoc(MAX_STRING_SIZE))
     ->inject('adapter')
     ->inject('response')
     ->action(function (array $collection, Adapter $adapter, Response $response) {
@@ -249,7 +250,7 @@ Http::post('/v1/queries/getCountOfAttributes')
 
 Http::post('/v1/queries/getCountOfIndexes')
     ->groups(['api'])
-    ->param('collection', '', new Assoc())
+    ->param('collection', '', new Assoc(MAX_STRING_SIZE))
     ->inject('adapter')
     ->inject('response')
     ->action(function (array $collection, Adapter $adapter, Response $response) {
@@ -264,7 +265,7 @@ Http::post('/v1/queries/getCountOfIndexes')
 
 Http::post('/v1/queries/getAttributeWidth')
     ->groups(['api'])
-    ->param('collection', '', new Assoc())
+    ->param('collection', '', new Assoc(MAX_STRING_SIZE))
     ->inject('adapter')
     ->inject('response')
     ->action(function (array $collection, Adapter $adapter, Response $response) {
@@ -280,7 +281,7 @@ Http::post('/v1/queries/getAttributeWidth')
 Http::post('/v1/queries/createDocument')
     ->groups(['api'])
     ->param('collection', '', new Text(MAX_STRING_SIZE, 0))
-    ->param('document', '', new Assoc())
+    ->param('document', '', new Assoc(MAX_STRING_SIZE))
     ->inject('adapter')
     ->inject('response')
     ->action(function (string $collection, array $document, Adapter $adapter, Response $response) {
@@ -296,7 +297,7 @@ Http::post('/v1/queries/createDocument')
 Http::post('/v1/queries/updateDocument')
     ->groups(['api'])
     ->param('collection', '', new Text(MAX_STRING_SIZE, 0))
-    ->param('document', '', new Assoc())
+    ->param('document', '', new Assoc(MAX_STRING_SIZE))
     ->inject('adapter')
     ->inject('response')
     ->action(function (string $collection, array $document, Adapter $adapter, Response $response) {
@@ -327,7 +328,7 @@ Http::post('/v1/queries/getDocument')
     ->groups(['api'])
     ->param('collection', '', new Text(MAX_STRING_SIZE, 0))
     ->param('id', '', new Text(MAX_STRING_SIZE, 0))
-    ->param('queries', [], new ArrayList(new Assoc(), MAX_ARRAY_SIZE), '', true)
+    ->param('queries', [], new ArrayList(new Assoc(MAX_STRING_SIZE), MAX_ARRAY_SIZE), '', true)
     ->inject('adapter')
     ->inject('response')
     ->action(function (string $collection, string $id, array $queries, Adapter $adapter, Response $response) {
@@ -345,12 +346,12 @@ Http::post('/v1/queries/getDocument')
 Http::post('/v1/queries/find')
     ->groups(['api'])
     ->param('collection', '', new Text(MAX_STRING_SIZE, 0))
-    ->param('queries', [], new ArrayList(new Assoc(), MAX_ARRAY_SIZE), '', true)
+    ->param('queries', [], new ArrayList(new Assoc(MAX_STRING_SIZE), MAX_ARRAY_SIZE), '', true)
     ->param('limit', 25, new Integer(), '', true)
     ->param('offset', null, new Integer(), '', true)
     ->param('orderAttributes', [], new ArrayList(new Text(MAX_STRING_SIZE, 0), MAX_ARRAY_SIZE), '', true)
     ->param('orderTypes', [], new ArrayList(new Text(MAX_STRING_SIZE, 0), MAX_ARRAY_SIZE), '', true)
-    ->param('cursor', [], new Assoc(), '', true)
+    ->param('cursor', [], new Assoc(MAX_STRING_SIZE), '', true)
     ->param('cursorDirection', Database::CURSOR_AFTER, new Text(MAX_STRING_SIZE, 0), '', true)
     ->param('timeout', null, new Integer(), '', true)
     ->inject('adapter')
@@ -371,7 +372,7 @@ Http::post('/v1/queries/sum')
     ->groups(['api'])
     ->param('collection', '', new Text(MAX_STRING_SIZE, 0))
     ->param('attribute', '', new Text(MAX_STRING_SIZE, 0))
-    ->param('queries', [], new ArrayList(new Assoc(), MAX_ARRAY_SIZE), '', true)
+    ->param('queries', [], new ArrayList(new Assoc(MAX_STRING_SIZE), MAX_ARRAY_SIZE), '', true)
     ->param('max', null, new Integer(), '', true)
     ->param('timeout', null, new Integer(), '', true)
     ->inject('adapter')
@@ -391,7 +392,7 @@ Http::post('/v1/queries/sum')
 Http::post('/v1/queries/count')
     ->groups(['api'])
     ->param('collection', '', new Text(MAX_STRING_SIZE, 0))
-    ->param('queries', [], new ArrayList(new Assoc(), MAX_ARRAY_SIZE), '', true)
+    ->param('queries', [], new ArrayList(new Assoc(MAX_STRING_SIZE), MAX_ARRAY_SIZE), '', true)
     ->param('max', null, new Integer(), '', true)
     ->param('timeout', null, new Integer(), '', true)
     ->inject('adapter')

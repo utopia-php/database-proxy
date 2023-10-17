@@ -1,2 +1,0 @@
--- TODO: Convert this to real release process
-docker build -t utopia-php/database-proxy:0.1.0 .
