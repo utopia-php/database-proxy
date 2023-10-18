@@ -27,6 +27,9 @@ const MAX_ARRAY_SIZE = 100000;
 const MAX_STRING_SIZE = 20 * 1024 * 1024; // 20 MB
 const PAYLOAD_SIZE = 20 * 1024 * 1024; // 20MB
 
+// Unlimited memory limit to handle as many coroutines/requests as possible
+ini_set('memory_limit', '-1');
+
 require_once __DIR__ . '/endpoints.php';
 
 Http::setMode((string) Http::getEnv('UTOPIA_DATABASE_PROXY_ENV', Http::MODE_TYPE_PRODUCTION));
