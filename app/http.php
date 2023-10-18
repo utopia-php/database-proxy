@@ -17,6 +17,8 @@ use Utopia\Logger\Adapter\Raygun;
 use Utopia\Logger\Adapter\Sentry;
 use Utopia\Logger\Log;
 use Utopia\Logger\Logger;
+use Utopia\Pools\Connection;
+use Utopia\Pools\Pool;
 use Utopia\Registry\Registry;
 
 use function Swoole\Coroutine\run;
@@ -51,43 +53,37 @@ $registry->set('logger', function () {
     return $logger;
 });
 
-$registry->set('adapters', function () {
-    $dsns = \explode(',', Http::getEnv('UTOPIA_DATABASE_PROXY_SECRET_CONNECTIONS', '') ?? '');
+$registry->set('pool', function () {
+    $dsnString = Http::getEnv('UTOPIA_DATABASE_PROXY_SECRET_CONNECTION', '') ?? '';
 
-    $adapters = [];
+    $dsn = new DSN($dsnString);
+    $dsnHost = $dsn->getHost();
+    $dsnPort = $dsn->getPort();
+    $dsnUser = $dsn->getUser();
+    $dsnPass = $dsn->getPassword();
+    $dsnScheme = $dsn->getScheme();
+    $dsnDatabase = $dsn->getPath() ?? '';
+    $poolSize = \intval($dsn->getParam('pool_size', '255'));
 
-    foreach ($dsns as $dsnPair) {
-        [$dsnName, $dsnString] = explode('=', $dsnPair);
-        $dsn = new DSN($dsnString);
-        $dsnHost = $dsn->getHost();
-        $dsnPort = $dsn->getPort();
-        $dsnUser = $dsn->getUser();
-        $dsnPass = $dsn->getPassword();
-        $dsnScheme = $dsn->getScheme();
-        $dsnDatabase = $dsn->getPath() ?? '';
-
-        // TODO: Introduce pools with ?pool_size=64
-
+    $pool = new Pool('adapter-pool', $poolSize, function () use ($dsnScheme, $dsnHost, $dsnPort, $dsnUser, $dsnPass, $dsnDatabase) {
         switch ($dsnScheme) {
             case 'mariadb':
-                $adapters[$dsnName] = function () use ($dsnHost, $dsnPort, $dsnUser, $dsnPass, $dsnDatabase) {
-                    $pdo = new PDO("mysql:host={$dsnHost};port={$dsnPort};dbname={$dsnDatabase};charset=utf8mb4", $dsnUser, $dsnPass, array(
-                        PDO::ATTR_TIMEOUT => 15, // Seconds
-                        PDO::ATTR_PERSISTENT => false,
-                        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                        PDO::ATTR_ERRMODE => Http::isDevelopment() ? PDO::ERRMODE_WARNING : PDO::ERRMODE_SILENT, // If in production mode, warnings are not displayed
-                        PDO::ATTR_EMULATE_PREPARES => true,
-                        PDO::ATTR_STRINGIFY_FETCHES => true
-                    ));
-                    $adapter = new MariaDB($pdo);
-                    $adapter->setDefaultDatabase($dsnDatabase);
-                    return $adapter;
-                };
-                break;
-        };
-    }
+                $pdo = new PDO("mysql:host={$dsnHost};port={$dsnPort};dbname={$dsnDatabase};charset=utf8mb4", $dsnUser, $dsnPass, array(
+                    PDO::ATTR_TIMEOUT => 15, // Seconds
+                    PDO::ATTR_PERSISTENT => false,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::ATTR_ERRMODE => Http::isDevelopment() ? PDO::ERRMODE_WARNING : PDO::ERRMODE_SILENT, // If in production mode, warnings are not displayed
+                    PDO::ATTR_EMULATE_PREPARES => true,
+                    PDO::ATTR_STRINGIFY_FETCHES => true
+                ));
+                $adapter = new MariaDB($pdo);
+                $adapter->setDefaultDatabase($dsnDatabase);
 
-    return $adapters;
+                return $adapter;
+        };
+    });
+
+    return $pool;
 });
 
 $http = new Server("0.0.0.0", Http::getEnv('UTOPIA_DATABASE_PROXY_PORT', '80'));
@@ -108,11 +104,15 @@ Http::onStart()
 
 Http::setResource('registry', fn () => $registry);
 Http::setResource('logger', fn (Registry $registry) => $registry->get('logger'), ['registry']);
-Http::setResource('adapters', fn (Registry $registry) => $registry->get('adapters'), ['registry']);
+Http::setResource('pool', fn (Registry $registry) => $registry->get('pool'), ['registry']);
 Http::setResource('log', fn () => new Log());
 
-Http::setResource('adapter', function (Request $request, array $adapters) {
-    $database = $request->getHeader('x-utopia-database', '');
+Http::setResource('adapterConnection', function (Pool $pool) {
+    $connection = $pool->pop();
+    return $connection;
+}, ['pool']);
+
+Http::setResource('adapter', function (Request $request, Connection $adapterConnection) {
     $namespace = $request->getHeader('x-utopia-namespace', '');
     $timeout = $request->getHeader('x-utopia-timeout', '');
     $defaultDatabase = $request->getHeader('x-utopia-default-database', '');
@@ -120,17 +120,7 @@ Http::setResource('adapter', function (Request $request, array $adapters) {
     $status = $request->getHeader('x-utopia-auth-status', '');
     $statusDefault = $request->getHeader('x-utopia-auth-status-default', '');
 
-    if (empty($database)) {
-        throw new Exception('Incorrect database in x-utopia-database header.', 400);
-    }
-
-    $adapter = $adapters[$database] ?? null;
-
-    if (empty($adapter)) {
-        throw new Exception('Incorrect database in x-utopia-database header.', 400);
-    }
-
-    $resource = $adapter();
+    $resource = $adapterConnection->getResource();
     $resource->setNamespace($namespace);
 
     if (!empty($timeout)) {
@@ -168,7 +158,7 @@ Http::setResource('adapter', function (Request $request, array $adapters) {
     }
 
     return $resource;
-}, ['request', 'adapters']);
+}, ['request', 'adapterConnection']);
 
 Http::init()
     ->groups(['api'])
@@ -179,6 +169,25 @@ Http::init()
 
         if ($header !== $secret) {
             throw new Exception('Incorrect secret in x-utopia-secret header.', 401);
+        }
+    });
+
+Http::shutdown()
+    ->inject('utopia')
+    ->inject('context')
+    ->action(function (Http $app, string $context) {
+        $connection = $app->getResource('adapterConnection', $context);
+
+        if (isset($connection)) {
+            $connection->reclaim();
+        }
+    });
+
+Http::init()
+    ->groups(['mock'])
+    ->action(function () {
+        if (!Http::isDevelopment()) {
+            throw new Exception('Mock endpoints are not implemented on production.', 501);
         }
     });
 

@@ -13,13 +13,13 @@ use Utopia\Http\Validator\FloatValidator;
 use Utopia\Http\Validator\Integer;
 use Utopia\Http\Validator\Text;
 
-Http::post('/mock/error')
-    ->groups(['api'])
+Http::get('/mock/error')
+    ->groups(['api', 'mock'])
     ->action(function () {
         throw new Exception('Mock error', 500);
     });
 
-Http::post('/v1/queries/ping')
+Http::get('/v1/ping')
     ->groups(['api'])
     ->inject('adapter')
     ->inject('response')
@@ -31,13 +31,26 @@ Http::post('/v1/queries/ping')
         ]);
     });
 
-Http::post('/v1/queries/exists')
+Http::get('/v1/databases/:database')
     ->groups(['api'])
     ->param('database', '', new Text(MAX_STRING_SIZE, 0))
-    ->param('collection', null, new Text(MAX_STRING_SIZE, 0), '', true)
     ->inject('adapter')
     ->inject('response')
-    ->action(function (string $database, ?string $collection, Adapter $adapter, Response $response) {
+    ->action(function (string $database, Adapter $adapter, Response $response) {
+        $output = $adapter->exists($database, null);
+
+        $response->json([
+            'output' => $output
+        ]);
+    });
+
+Http::get('/v1/collections/:collection')
+    ->groups(['api'])
+    ->param('database', '', new Text(MAX_STRING_SIZE, 0))
+    ->param('collection', '', new Text(MAX_STRING_SIZE, 0))
+    ->inject('adapter')
+    ->inject('response')
+    ->action(function (string $database, string $collection, Adapter $adapter, Response $response) {
         $output = $adapter->exists($database, $collection);
 
         $response->json([
@@ -45,40 +58,40 @@ Http::post('/v1/queries/exists')
         ]);
     });
 
-Http::post('/v1/queries/create')
+Http::post('/v1/databases')
     ->groups(['api'])
-    ->param('name', '', new Text(MAX_STRING_SIZE, 0))
+    ->param('database', '', new Text(MAX_STRING_SIZE, 0))
     ->inject('adapter')
     ->inject('response')
-    ->action(function (string $name, Adapter $adapter, Response $response) {
-        $output = $adapter->create($name);
+    ->action(function (string $database, Adapter $adapter, Response $response) {
+        $output = $adapter->create($database);
 
         $response->json([
             'output' => $output
         ]);
     });
 
-Http::post('/v1/queries/delete')
+Http::delete('/v1/databases/:database')
     ->groups(['api'])
-    ->param('name', '', new Text(MAX_STRING_SIZE, 0))
+    ->param('database', '', new Text(MAX_STRING_SIZE, 0))
     ->inject('adapter')
     ->inject('response')
-    ->action(function (string $name, Adapter $adapter, Response $response) {
-        $output = $adapter->delete($name);
+    ->action(function (string $database, Adapter $adapter, Response $response) {
+        $output = $adapter->delete($database);
 
         $response->json([
             'output' => $output
         ]);
     });
 
-Http::post('/v1/queries/createCollection')
+Http::post('/v1/collections')
     ->groups(['api'])
-    ->param('name', '', new Text(MAX_STRING_SIZE, 0))
+    ->param('collection', '', new Text(MAX_STRING_SIZE, 0))
     ->param('attributes', [], new ArrayList(new Assoc(MAX_STRING_SIZE), MAX_ARRAY_SIZE), '', true)
     ->param('indexes', [], new ArrayList(new Assoc(MAX_STRING_SIZE), MAX_ARRAY_SIZE), '', true)
     ->inject('adapter')
     ->inject('response')
-    ->action(function (string $name, array $attributes, array $indexes, Adapter $adapter, Response $response) {
+    ->action(function (string $collection, array $attributes, array $indexes, Adapter $adapter, Response $response) {
         foreach ($attributes as &$attribute) {
             $attribute = new Document($attribute);
         }
@@ -87,139 +100,139 @@ Http::post('/v1/queries/createCollection')
             $index = new Document($index);
         }
 
-        $output = $adapter->createCollection($name, $attributes, $indexes);
+        $output = $adapter->createCollection($collection, $attributes, $indexes);
 
         $response->json([
             'output' => $output
         ]);
     });
 
-Http::post('/v1/queries/deleteCollection')
-    ->groups(['api'])
-    ->param('id', '', new Text(MAX_STRING_SIZE, 0))
-    ->inject('adapter')
-    ->inject('response')
-    ->action(function (string $id, Adapter $adapter, Response $response) {
-        $output = $adapter->deleteCollection($id);
-
-        $response->json([
-            'output' => $output
-        ]);
-    });
-
-Http::post('/v1/queries/createAttribute')
+Http::delete('/v1/collections/:collection')
     ->groups(['api'])
     ->param('collection', '', new Text(MAX_STRING_SIZE, 0))
-    ->param('id', '', new Text(MAX_STRING_SIZE, 0))
+    ->inject('adapter')
+    ->inject('response')
+    ->action(function (string $collection, Adapter $adapter, Response $response) {
+        $output = $adapter->deleteCollection($collection);
+
+        $response->json([
+            'output' => $output
+        ]);
+    });
+
+Http::post('/v1/collections/:collection/attributes')
+    ->groups(['api'])
+    ->param('collection', '', new Text(MAX_STRING_SIZE, 0))
+    ->param('attribute', '', new Text(MAX_STRING_SIZE, 0))
     ->param('type', '', new Text(MAX_STRING_SIZE, 0))
     ->param('size', '', new Integer())
     ->param('signed', true, new Boolean(), '', true)
     ->param('array', false, new Boolean(), '', true)
     ->inject('adapter')
     ->inject('response')
-    ->action(function (string $collection, string $id, string $type, int $size, bool $signed, bool $array, Adapter $adapter, Response $response) {
-        $output = $adapter->createAttribute($collection, $id, $type, $size, $signed, $array);
+    ->action(function (string $collection, string $attribute, string $type, int $size, bool $signed, bool $array, Adapter $adapter, Response $response) {
+        $output = $adapter->createAttribute($collection, $attribute, $type, $size, $signed, $array);
 
         $response->json([
             'output' => $output
         ]);
     });
 
-Http::post('/v1/queries/updateAttribute')
+Http::put('/v1/collections/:collection/attributes/:attribute')
     ->groups(['api'])
     ->param('collection', '', new Text(MAX_STRING_SIZE, 0))
-    ->param('id', '', new Text(MAX_STRING_SIZE, 0))
+    ->param('attribute', '', new Text(MAX_STRING_SIZE, 0))
     ->param('type', '', new Text(MAX_STRING_SIZE, 0))
     ->param('size', '', new Integer())
     ->param('signed', true, new Boolean(), '', true)
     ->param('array', false, new Boolean(), '', true)
     ->inject('adapter')
     ->inject('response')
-    ->action(function (string $collection, string $id, string $type, int $size, bool $signed, bool $array, Adapter $adapter, Response $response) {
-        $output = $adapter->updateAttribute($collection, $id, $type, $size, $signed, $array);
+    ->action(function (string $collection, string $attribute, string $type, int $size, bool $signed, bool $array, Adapter $adapter, Response $response) {
+        $output = $adapter->updateAttribute($collection, $attribute, $type, $size, $signed, $array);
 
         $response->json([
             'output' => $output
         ]);
     });
 
-Http::post('/v1/queries/deleteAttribute')
+Http::delete('/v1/collections/:collection/attributes/:attribute')
     ->groups(['api'])
     ->param('collection', '', new Text(MAX_STRING_SIZE, 0))
-    ->param('id', '', new Text(MAX_STRING_SIZE, 0))
+    ->param('attribute', '', new Text(MAX_STRING_SIZE, 0))
     ->inject('adapter')
     ->inject('response')
-    ->action(function (string $collection, string $id, Adapter $adapter, Response $response) {
-        $output = $adapter->deleteAttribute($collection, $id);
+    ->action(function (string $collection, string $attribute, Adapter $adapter, Response $response) {
+        $output = $adapter->deleteAttribute($collection, $attribute);
 
         $response->json([
             'output' => $output
         ]);
     });
 
-Http::post('/v1/queries/renameAttribute')
+Http::patch('/v1/collections/:collection/attributes/:attribute/name')
     ->groups(['api'])
     ->param('collection', '', new Text(MAX_STRING_SIZE, 0))
-    ->param('old', '', new Text(MAX_STRING_SIZE, 0))
+    ->param('attribute', '', new Text(MAX_STRING_SIZE, 0))
     ->param('new', '', new Text(MAX_STRING_SIZE, 0))
     ->inject('adapter')
     ->inject('response')
-    ->action(function (string $collection, string $old, string $new, Adapter $adapter, Response $response) {
-        $output = $adapter->renameAttribute($collection, $old, $new);
+    ->action(function (string $collection, string $attribute, string $new, Adapter $adapter, Response $response) {
+        $output = $adapter->renameAttribute($collection, $attribute, $new);
 
         $response->json([
             'output' => $output
         ]);
     });
 
-Http::post('/v1/queries/createIndex')
+Http::post('/v1/collections/:collection/indexes')
     ->groups(['api'])
     ->param('collection', '', new Text(MAX_STRING_SIZE, 0))
-    ->param('id', '', new Text(MAX_STRING_SIZE, 0))
+    ->param('index', '', new Text(MAX_STRING_SIZE, 0))
     ->param('type', '', new Text(MAX_STRING_SIZE, 0))
     ->param('attributes', [], new ArrayList(new Text(MAX_STRING_SIZE, 0), MAX_ARRAY_SIZE))
     ->param('lengths', [], new ArrayList(new Integer(), MAX_ARRAY_SIZE))
     ->param('orders', [], new ArrayList(new Text(MAX_STRING_SIZE, 0), MAX_ARRAY_SIZE))
     ->inject('adapter')
     ->inject('response')
-    ->action(function (string $collection, string $id, string $type, array $attributes, array $lengths, array $orders, Adapter $adapter, Response $response) {
-        $output = $adapter->createIndex($collection, $id, $type, $attributes, $lengths, $orders);
+    ->action(function (string $collection, string $index, string $type, array $attributes, array $lengths, array $orders, Adapter $adapter, Response $response) {
+        $output = $adapter->createIndex($collection, $index, $type, $attributes, $lengths, $orders);
 
         $response->json([
             'output' => $output
         ]);
     });
 
-Http::post('/v1/queries/renameIndex')
+Http::patch('/v1/collections/:collection/indexes/:index/name')
     ->groups(['api'])
     ->param('collection', '', new Text(MAX_STRING_SIZE, 0))
-    ->param('old', '', new Text(MAX_STRING_SIZE, 0))
+    ->param('index', '', new Text(MAX_STRING_SIZE, 0))
     ->param('new', '', new Text(MAX_STRING_SIZE, 0))
     ->inject('adapter')
     ->inject('response')
-    ->action(function (string $collection, string $old, string $new, Adapter $adapter, Response $response) {
-        $output = $adapter->renameIndex($collection, $old, $new);
+    ->action(function (string $collection, string $index, string $new, Adapter $adapter, Response $response) {
+        $output = $adapter->renameIndex($collection, $index, $new);
 
         $response->json([
             'output' => $output
         ]);
     });
 
-Http::post('/v1/queries/deleteIndex')
+Http::delete('/v1/collections/:collection/indexes/:index')
     ->groups(['api'])
     ->param('collection', '', new Text(MAX_STRING_SIZE, 0))
-    ->param('id', '', new Text(MAX_STRING_SIZE, 0))
+    ->param('index', '', new Text(MAX_STRING_SIZE, 0))
     ->inject('adapter')
     ->inject('response')
-    ->action(function (string $collection, string $id, Adapter $adapter, Response $response) {
-        $output = $adapter->deleteIndex($collection, $id);
+    ->action(function (string $collection, string $index, Adapter $adapter, Response $response) {
+        $output = $adapter->deleteIndex($collection, $index);
 
         $response->json([
             'output' => $output
         ]);
     });
 
-Http::post('/v1/queries/getSizeOfCollection')
+Http::get('/v1/collections/:collection/size')
     ->groups(['api'])
     ->param('collection', '', new Text(MAX_STRING_SIZE, 0))
     ->inject('adapter')
@@ -233,7 +246,7 @@ Http::post('/v1/queries/getSizeOfCollection')
     });
 
 
-Http::post('/v1/queries/getCountOfAttributes')
+Http::get('/v1/collections/:collection/counts/attributes')
     ->groups(['api'])
     ->param('collection', '', new Assoc(MAX_STRING_SIZE))
     ->inject('adapter')
@@ -248,7 +261,7 @@ Http::post('/v1/queries/getCountOfAttributes')
         ]);
     });
 
-Http::post('/v1/queries/getCountOfIndexes')
+Http::get('/v1/collections/:collection/counts/indexes')
     ->groups(['api'])
     ->param('collection', '', new Assoc(MAX_STRING_SIZE))
     ->inject('adapter')
@@ -263,7 +276,7 @@ Http::post('/v1/queries/getCountOfIndexes')
         ]);
     });
 
-Http::post('/v1/queries/getAttributeWidth')
+Http::get('/v1/collections/:collection/widths/attributes')
     ->groups(['api'])
     ->param('collection', '', new Assoc(MAX_STRING_SIZE))
     ->inject('adapter')
@@ -278,7 +291,7 @@ Http::post('/v1/queries/getAttributeWidth')
         ]);
     });
 
-Http::post('/v1/queries/createDocument')
+Http::post('/v1/collections/:collection/documents')
     ->groups(['api'])
     ->param('collection', '', new Text(MAX_STRING_SIZE, 0))
     ->param('document', '', new Assoc(MAX_STRING_SIZE))
@@ -294,7 +307,7 @@ Http::post('/v1/queries/createDocument')
         ]);
     });
 
-Http::post('/v1/queries/updateDocument')
+Http::put('/v1/collections/:collection/documents')
     ->groups(['api'])
     ->param('collection', '', new Text(MAX_STRING_SIZE, 0))
     ->param('document', '', new Assoc(MAX_STRING_SIZE))
@@ -310,40 +323,40 @@ Http::post('/v1/queries/updateDocument')
         ]);
     });
 
-Http::post('/v1/queries/deleteDocument')
+Http::delete('/v1/collections/:collection/documents/:document')
     ->groups(['api'])
     ->param('collection', '', new Text(MAX_STRING_SIZE, 0))
-    ->param('id', '', new Text(MAX_STRING_SIZE, 0))
+    ->param('document', '', new Text(MAX_STRING_SIZE, 0))
     ->inject('adapter')
     ->inject('response')
-    ->action(function (string $collection, string $id, Adapter $adapter, Response $response) {
-        $output = $adapter->deleteDocument($collection, $id);
+    ->action(function (string $collection, string $document, Adapter $adapter, Response $response) {
+        $output = $adapter->deleteDocument($collection, $document);
 
         $response->json([
             'output' => $output
         ]);
     });
 
-Http::post('/v1/queries/getDocument')
+Http::get('/v1/collections/:collection/documents/:document')
     ->groups(['api'])
     ->param('collection', '', new Text(MAX_STRING_SIZE, 0))
-    ->param('id', '', new Text(MAX_STRING_SIZE, 0))
+    ->param('document', '', new Text(MAX_STRING_SIZE, 0))
     ->param('queries', [], new ArrayList(new Assoc(MAX_STRING_SIZE), MAX_ARRAY_SIZE), '', true)
     ->inject('adapter')
     ->inject('response')
-    ->action(function (string $collection, string $id, array $queries, Adapter $adapter, Response $response) {
+    ->action(function (string $collection, string $document, array $queries, Adapter $adapter, Response $response) {
         foreach ($queries as &$query) {
             $query = new Query($query['method'], $query['attribute'] ?? '', $query['values'] ?? []);
         }
 
-        $output = $adapter->getDocument($collection, $id, $queries);
+        $output = $adapter->getDocument($collection, $document, $queries);
 
         $response->json([
             'output' => $output
         ]);
     });
 
-Http::post('/v1/queries/find')
+Http::get('/v1/collections/:collection/documents')
     ->groups(['api'])
     ->param('collection', '', new Text(MAX_STRING_SIZE, 0))
     ->param('queries', [], new ArrayList(new Assoc(MAX_STRING_SIZE), MAX_ARRAY_SIZE), '', true)
@@ -368,7 +381,7 @@ Http::post('/v1/queries/find')
         ]);
     });
 
-Http::post('/v1/queries/sum')
+Http::get('/v1/collections/:collection/documents-sum')
     ->groups(['api'])
     ->param('collection', '', new Text(MAX_STRING_SIZE, 0))
     ->param('attribute', '', new Text(MAX_STRING_SIZE, 0))
@@ -389,7 +402,7 @@ Http::post('/v1/queries/sum')
         ]);
     });
 
-Http::post('/v1/queries/count')
+Http::get('/v1/collections/:collection/documents-count')
     ->groups(['api'])
     ->param('collection', '', new Text(MAX_STRING_SIZE, 0))
     ->param('queries', [], new ArrayList(new Assoc(MAX_STRING_SIZE), MAX_ARRAY_SIZE), '', true)
@@ -409,25 +422,25 @@ Http::post('/v1/queries/count')
         ]);
     });
 
-Http::post('/v1/queries/increaseDocumentAttribute')
+Http::patch('/v1/collections/:collection/documents/:document/increase')
     ->groups(['api'])
     ->param('collection', '', new Text(MAX_STRING_SIZE, 0))
-    ->param('id', '', new Text(MAX_STRING_SIZE, 0))
+    ->param('document', '', new Text(MAX_STRING_SIZE, 0))
     ->param('attribute', '', new Text(MAX_STRING_SIZE, 0))
     ->param('value', null, new FloatValidator(), '', true)
     ->param('min', null, new FloatValidator(), '', true)
     ->param('max', null, new FloatValidator(), '', true)
     ->inject('adapter')
     ->inject('response')
-    ->action(function (string $collection, string $id, string $attribute, float $value, ?float $min, ?float $max, Adapter $adapter, Response $response) {
-        $output = $adapter->increaseDocumentAttribute($collection, $id, $attribute, $value, $min, $max);
+    ->action(function (string $collection, string $document, string $attribute, float $value, ?float $min, ?float $max, Adapter $adapter, Response $response) {
+        $output = $adapter->increaseDocumentAttribute($collection, $document, $attribute, $value, $min, $max);
 
         $response->json([
             'output' => $output
         ]);
     });
 
-Http::post('/v1/queries/createRelationship')
+Http::post('/v1/collections/:collection/relationships')
     ->groups(['api'])
     ->param('collection', '', new Text(MAX_STRING_SIZE, 0))
     ->param('relatedCollection', '', new Text(MAX_STRING_SIZE, 0))
@@ -445,7 +458,7 @@ Http::post('/v1/queries/createRelationship')
         ]);
     });
 
-Http::post('/v1/queries/updateRelationship')
+Http::put('/v1/collections/:collection/relationships/:relatedCollection')
     ->groups(['api'])
     ->param('collection', '', new Text(MAX_STRING_SIZE, 0))
     ->param('relatedCollection', '', new Text(MAX_STRING_SIZE, 0))
@@ -465,7 +478,7 @@ Http::post('/v1/queries/updateRelationship')
         ]);
     });
 
-Http::post('/v1/queries/deleteRelationship')
+Http::delete('/v1/collections/:collection/relationships/:relatedCollection')
     ->groups(['api'])
     ->param('collection', '', new Text(MAX_STRING_SIZE, 0))
     ->param('relatedCollection', '', new Text(MAX_STRING_SIZE, 0))
