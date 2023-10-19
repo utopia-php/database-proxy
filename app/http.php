@@ -127,7 +127,7 @@ Http::setResource('adapter', function (Request $request, Connection $adapterConn
     $resource->setNamespace($namespace);
 
     if (!empty($timeout)) {
-        $resource->setTimeout($timeout);
+        $resource->setTimeout(\intval($timeout));
     } else {
         $resource->clearTimeout();
     }
@@ -138,25 +138,26 @@ Http::setResource('adapter', function (Request $request, Connection $adapterConn
         $resource->setDefaultDatabase('');
     }
 
+    // TODO: This wont work with coroutines
     Authorization::cleanRoles();
     Authorization::setRole('any');
     foreach (\explode(',', $roles) as $role) {
         Authorization::setRole($role);
     }
 
-    if (!empty($statusDefault)) {
-        if ($statusDefault === 'true') {
-            Authorization::setDefaultStatus(true);
-        } else {
-            Authorization::setDefaultStatus(false);
-        }
+    // TODO: This wont work with coroutines
+    if (!empty($statusDefault) && $statusDefault === 'false') {
+        Authorization::setDefaultStatus(false);
+    } else {
+        Authorization::setDefaultStatus(true);
     }
 
+    // TODO: This wont work with coroutines
     if (!empty($status)) {
-        if ($status === 'true') {
-            Authorization::enable();
-        } else {
+        if ($status === 'false') {
             Authorization::disable();
+        } else {
+            Authorization::enable();
         }
     }
 

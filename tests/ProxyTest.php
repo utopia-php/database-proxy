@@ -3,6 +3,11 @@
 namespace Tests;
 
 use PHPUnit\Framework\TestCase;
+use Utopia\Database\Database;
+use Utopia\Database\Document;
+use Utopia\Database\Helpers\ID;
+use Utopia\Database\Helpers\Permission;
+use Utopia\Database\Helpers\Role;
 use Utopia\Fetch\Client;
 use Utopia\Fetch\Response;
 
@@ -13,7 +18,7 @@ final class ProxyTest extends TestCase
     protected string $namespace = 'my-namespace';
     protected string $defaultDatabase = 'appwrite';
     protected bool $defaultAuthStatus = true;
-    protected int $timeout = 10; // Seconds
+    protected int $timeout = 10000; // Milliseconds
 
     protected function setUp(): void
     {
@@ -60,6 +65,9 @@ final class ProxyTest extends TestCase
             'attributes' => [],
             'indexes' => []
         ]);
+        self::assertEquals(200, $response->getStatusCode());
+        $body = \json_decode($response->getBody(), true);
+        self::assertTrue($body['output']);
 
         $response = $this->call('GET', '/databases/wrong-default-database');
         self::assertEquals(200, $response->getStatusCode());
@@ -90,6 +98,9 @@ final class ProxyTest extends TestCase
             'attributes' => [],
             'indexes' => []
         ]);
+        self::assertEquals(200, $response->getStatusCode());
+        $body = \json_decode($response->getBody(), true);
+        self::assertTrue($body['output']);
 
         $response = $this->call('GET', '/collections/cars?database=' . $this->defaultDatabase);
         self::assertEquals(200, $response->getStatusCode());
@@ -104,9 +115,97 @@ final class ProxyTest extends TestCase
         self::assertFalse($body['output']);
     }
 
-    // TODO: Timeout test
-    // TODO: Roles test
-    // TODO: Auth Status test
+    public function testTimeout(): void
+    {
+        $correctTimeout = $this->timeout;
+
+        $this->timeout = 600000;
+        $response = $this->call('GET', '/ping');
+        self::assertEquals(200, $response->getStatusCode());
+
+        $this->timeout = -1;
+        $response = $this->call('GET', '/ping');
+        self::assertEquals(500, $response->getStatusCode());
+
+        $this->timeout = $correctTimeout;
+    }
+
+    public function testAuth(): void
+    {
+        $response = $this->call('POST', '/collections', [
+            'collection' => 'passwords',
+            'attributes' => [
+                new Document([
+                    '$id' => 'password',
+                    'type' => Database::VAR_STRING,
+                    'size' => 512,
+                    'required' => true
+                ])
+            ],
+            'indexes' => []
+        ]);
+        self::assertEquals(200, $response->getStatusCode());
+        $body = \json_decode($response->getBody(), true);
+        self::assertTrue($body['output']);
+
+        $response = $this->call('GET', '/collections/passwords?database=' . $this->defaultDatabase);
+        self::assertEquals(200, $response->getStatusCode());
+        $body = \json_decode($response->getBody(), true);
+        self::assertTrue($body['output']);
+
+        $docAny = ID::unique();
+        $response = $this->call('POST', '/collections/passwords/documents', [
+            'document' => new Document([
+                '$id' => $docAny,
+                '$permissions' => [
+                    Permission::read(Role::any())
+                ],
+                'password' => 'any-password'
+            ])
+        ]);
+        self::assertEquals(200, $response->getStatusCode());
+
+        $docsGuests = ID::unique();
+        $response = $this->call('POST', '/collections/passwords/documents', [
+            'document' => new Document([
+                '$id' => $docsGuests,
+                '$permissions' => [
+                    Permission::read(Role::guests())
+                ],
+                'password' => 'guests-password'
+            ])
+        ]);
+        self::assertEquals(200, $response->getStatusCode());
+
+        $docUsers = ID::unique();
+        $response = $this->call('POST', '/collections/passwords/documents', [
+            'document' => new Document([
+                '$id' => $docUsers,
+                '$permissions' => [
+                    Permission::read(Role::users())
+                ],
+                'password' => 'users-password'
+            ])
+        ]);
+        self::assertEquals(200, $response->getStatusCode());
+
+        $docTeam = ID::unique();
+        $response = $this->call('POST', '/collections/passwords/documents', [
+            'document' => new Document([
+                '$id' => $docTeam,
+                '$permissions' => [
+                    Permission::read(Role::team('admin'))
+                ],
+                'password' => 'team-password'
+            ])
+        ]);
+        self::assertEquals(200, $response->getStatusCode());
+
+        $response = $this->call('GET', '/collections/passwords/documents', [], [], true);
+        self::assertEquals(200, $response->getStatusCode());
+        $body = \json_decode($response->getBody(), true);
+        self::assertCount(4, $body['output']);
+    }
 
     public function testMock(): void
     {
@@ -151,6 +250,9 @@ final class ProxyTest extends TestCase
             'attributes' => [],
             'indexes' => []
         ]);
+        self::assertEquals(200, $response->getStatusCode());
+        $body = \json_decode($response->getBody(), true);
+        self::assertTrue($body['output']);
 
         $response = $this->call('GET', '/collections/books?database=' . $this->defaultDatabase);
         self::assertEquals(200, $response->getStatusCode());
@@ -159,7 +261,9 @@ final class ProxyTest extends TestCase
     }
 
     /**
-     * TODO: Add tests for all endpoints:
+     * TODO: We do a lot of E2E testing in utopia/database adapter.
+     * But eventuelly, lets add tests here for all endpoints:
+     *
      * Http::post('/v1/databases')
      * Http::delete('/v1/databases/:database')
      * Http::post('/v1/collections')
