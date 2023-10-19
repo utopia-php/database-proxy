@@ -205,6 +205,36 @@ final class ProxyTest extends TestCase
         self::assertEquals(200, $response->getStatusCode());
         $body = \json_decode($response->getBody(), true);
         self::assertCount(4, $body['output']);
+
+
+        $response = $this->call('GET', '/collections/passwords/documents', [], [], false);
+        self::assertEquals(200, $response->getStatusCode());
+        $body = \json_decode($response->getBody(), true);
+        self::assertCount(1, $body['output']);
+
+        $response = $this->call('GET', '/collections/passwords/documents', [], [
+            'users'
+        ], false);
+        self::assertEquals(200, $response->getStatusCode());
+        $body = \json_decode($response->getBody(), true);
+        self::assertCount(2, $body['output']);
+
+        $response = $this->call('GET', '/collections/passwords/documents', [], [
+            'guests'
+        ], false);
+        self::assertEquals(200, $response->getStatusCode());
+        $body = \json_decode($response->getBody(), true);
+        self::assertCount(2, $body['output']);
+
+        $response = $this->call('GET', '/collections/passwords/documents', [], [
+            'users',
+            'guests',
+            'team:admin'
+        ], false);
+
+        self::assertEquals(200, $response->getStatusCode());
+        $body = \json_decode($response->getBody(), true);
+        self::assertCount(4, $body['output']);
     }
 
     public function testMock(): void
