@@ -22,6 +22,7 @@ services:
   mariadb:
     image: mariadb:10.7
     container_name: utopia-mariadb
+    command: 'mysqld --max_connections=500'
     networks:
       - database
     ports:
@@ -29,8 +30,6 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=password
       - MARIADB_DATABASE=appwrite
-    volumes:
-      - ./mariadb.cnf:/etc/mysql/my.cnf
 
 networks:
   database:

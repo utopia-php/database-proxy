@@ -191,7 +191,7 @@ Http::init()
     ->groups(['mock'])
     ->action(function () {
         if (!Http::isDevelopment()) {
-            throw new Exception('Mock endpoints are not implemented on production.', 501);
+            throw new Exception('Mock endpoints are not implemented on production.', 404);
         }
     });
 
@@ -252,6 +252,7 @@ Http::error()
             case 403: // Error allowed publicly
             case 404: // Error allowed publicly
             case 406: // Error allowed publicly
+            case 408: // Error allowed publicly
             case 409: // Error allowed publicly
             case 412: // Error allowed publicly
             case 425: // Error allowed publicly

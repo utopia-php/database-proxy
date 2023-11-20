@@ -12,7 +12,8 @@ RUN composer install --ignore-platform-reqs --optimize-autoloader \
 # Prepare generic compiler
 FROM php:8.0.18-cli-alpine3.15 as compile
 
-ENV PHP_SWOOLE_VERSION=v4.8.10
+ENV PHP_SWOOLE_VERSION="v5.1.0" \
+  PHP_MONGODB_VERSION="1.16.1"
 
 RUN \
   apk add --no-cache --virtual .deps \
@@ -37,6 +38,16 @@ RUN \
   make && make install && \
   cd ..
 
+# Mongodb Extension
+FROM compile as mongodb
+RUN \
+  git clone --depth 1 --branch $PHP_MONGODB_VERSION https://github.com/mongodb/mongo-php-driver.git && \
+  cd mongo-php-driver && \
+  git submodule update --init && \
+  phpize && \
+  ./configure && \
+  make && make install
+
 # Proxy
 FROM php:8.0.18-cli-alpine3.15 as final
 
@@ -56,7 +67,8 @@ RUN \
   curl-dev \
   && apk add --no-cache \
   libstdc++ \
-  && docker-php-ext-install sockets pdo_mysql \
+  postgresql-dev \
+  && docker-php-ext-install sockets pdo_mysql pdo_pgsql \
   && apk del .deps \
   && rm -rf /var/cache/apk/*
 
@@ -68,6 +80,7 @@ COPY ./app /usr/local/app
 # Extensions and libraries
 COPY --from=composer /usr/local/src/vendor /usr/local/vendor
 COPY --from=swoole /usr/local/lib/php/extensions/no-debug-non-zts-20200930/swoole.so /usr/local/lib/php/extensions/no-debug-non-zts-20200930/
+COPY --from=mongodb /usr/local/lib/php/extensions/no-debug-non-zts-20200930/mongodb.so /usr/local/lib/php/extensions/no-debug-non-zts-20200930/
 
 RUN echo extension=swoole.so >> /usr/local/etc/php/conf.d/swoole.ini
 
