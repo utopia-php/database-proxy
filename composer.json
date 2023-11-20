@@ -17,10 +17,10 @@
         "lint": "./vendor/bin/pint --test",
         "format": "./vendor/bin/pint",
         "check": "./vendor/bin/phpstan analyse --level 8 -c phpstan.neon app tests",
-        "test": "./vendor/bin/phpunit --configuration phpunit.xml --debug"
+        "test": "./vendor/bin/phpunit --configuration phpunit.xml --testdox"
     },
     "require": {
-        "php": ">=8.0.0",
+        "php": ">=8.1.0",
         "ext-curl": "*",
         "ext-json": "*",
         "ext-swoole": "*",
@@ -42,7 +42,7 @@
     },
     "config": {
         "platform": {
-            "php": "8.0"
+            "php": "8.1"
         }
     }
 }

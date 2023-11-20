@@ -25,10 +25,7 @@ Http::get('/v1/ping')
     ->inject('response')
     ->action(function (Adapter $adapter, Response $response) {
         $output = $adapter->ping();
-
-        $response->json([
-            'output' => $output
-        ]);
+        $response->json(['output' => $output]);
     });
 
 Http::get('/v1/databases/:database')
@@ -38,10 +35,7 @@ Http::get('/v1/databases/:database')
     ->inject('response')
     ->action(function (string $database, Adapter $adapter, Response $response) {
         $output = $adapter->exists($database, null);
-
-        $response->json([
-            'output' => $output
-        ]);
+        $response->json(['output' => $output]);
     });
 
 Http::get('/v1/collections/:collection')
@@ -52,10 +46,7 @@ Http::get('/v1/collections/:collection')
     ->inject('response')
     ->action(function (string $database, string $collection, Adapter $adapter, Response $response) {
         $output = $adapter->exists($database, $collection);
-
-        $response->json([
-            'output' => $output
-        ]);
+        $response->json(['output' => $output]);
     });
 
 Http::post('/v1/databases')
@@ -65,10 +56,7 @@ Http::post('/v1/databases')
     ->inject('response')
     ->action(function (string $database, Adapter $adapter, Response $response) {
         $output = $adapter->create($database);
-
-        $response->json([
-            'output' => $output
-        ]);
+        $response->json(['output' => $output]);
     });
 
 Http::delete('/v1/databases/:database')
@@ -78,10 +66,7 @@ Http::delete('/v1/databases/:database')
     ->inject('response')
     ->action(function (string $database, Adapter $adapter, Response $response) {
         $output = $adapter->delete($database);
-
-        $response->json([
-            'output' => $output
-        ]);
+        $response->json(['output' => $output]);
     });
 
 Http::post('/v1/collections')
@@ -101,10 +86,7 @@ Http::post('/v1/collections')
         }
 
         $output = $adapter->createCollection($collection, $attributes, $indexes);
-
-        $response->json([
-            'output' => $output
-        ]);
+        $response->json(['output' => $output]);
     });
 
 Http::delete('/v1/collections/:collection')
@@ -114,10 +96,7 @@ Http::delete('/v1/collections/:collection')
     ->inject('response')
     ->action(function (string $collection, Adapter $adapter, Response $response) {
         $output = $adapter->deleteCollection($collection);
-
-        $response->json([
-            'output' => $output
-        ]);
+        $response->json(['output' => $output]);
     });
 
 Http::post('/v1/collections/:collection/attributes')
@@ -132,10 +111,7 @@ Http::post('/v1/collections/:collection/attributes')
     ->inject('response')
     ->action(function (string $collection, string $attribute, string $type, int $size, bool $signed, bool $array, Adapter $adapter, Response $response) {
         $output = $adapter->createAttribute($collection, $attribute, $type, $size, $signed, $array);
-
-        $response->json([
-            'output' => $output
-        ]);
+        $response->json(['output' => $output]);
     });
 
 Http::put('/v1/collections/:collection/attributes/:attribute')
@@ -150,10 +126,7 @@ Http::put('/v1/collections/:collection/attributes/:attribute')
     ->inject('response')
     ->action(function (string $collection, string $attribute, string $type, int $size, bool $signed, bool $array, Adapter $adapter, Response $response) {
         $output = $adapter->updateAttribute($collection, $attribute, $type, $size, $signed, $array);
-
-        $response->json([
-            'output' => $output
-        ]);
+        $response->json(['output' => $output]);
     });
 
 Http::delete('/v1/collections/:collection/attributes/:attribute')
@@ -164,10 +137,7 @@ Http::delete('/v1/collections/:collection/attributes/:attribute')
     ->inject('response')
     ->action(function (string $collection, string $attribute, Adapter $adapter, Response $response) {
         $output = $adapter->deleteAttribute($collection, $attribute);
-
-        $response->json([
-            'output' => $output
-        ]);
+        $response->json(['output' => $output]);
     });
 
 Http::patch('/v1/collections/:collection/attributes/:attribute/name')
@@ -179,10 +149,7 @@ Http::patch('/v1/collections/:collection/attributes/:attribute/name')
     ->inject('response')
     ->action(function (string $collection, string $attribute, string $new, Adapter $adapter, Response $response) {
         $output = $adapter->renameAttribute($collection, $attribute, $new);
-
-        $response->json([
-            'output' => $output
-        ]);
+        $response->json(['output' => $output]);
     });
 
 Http::post('/v1/collections/:collection/indexes')
@@ -197,10 +164,7 @@ Http::post('/v1/collections/:collection/indexes')
     ->inject('response')
     ->action(function (string $collection, string $index, string $type, array $attributes, array $lengths, array $orders, Adapter $adapter, Response $response) {
         $output = $adapter->createIndex($collection, $index, $type, $attributes, $lengths, $orders);
-
-        $response->json([
-            'output' => $output
-        ]);
+        $response->json(['output' => $output]);
     });
 
 Http::patch('/v1/collections/:collection/indexes/:index/name')
@@ -212,10 +176,7 @@ Http::patch('/v1/collections/:collection/indexes/:index/name')
     ->inject('response')
     ->action(function (string $collection, string $index, string $new, Adapter $adapter, Response $response) {
         $output = $adapter->renameIndex($collection, $index, $new);
-
-        $response->json([
-            'output' => $output
-        ]);
+        $response->json(['output' => $output]);
     });
 
 Http::delete('/v1/collections/:collection/indexes/:index')
@@ -226,10 +187,7 @@ Http::delete('/v1/collections/:collection/indexes/:index')
     ->inject('response')
     ->action(function (string $collection, string $index, Adapter $adapter, Response $response) {
         $output = $adapter->deleteIndex($collection, $index);
-
-        $response->json([
-            'output' => $output
-        ]);
+        $response->json(['output' => $output]);
     });
 
 Http::get('/v1/collections/:collection/size')
@@ -239,10 +197,7 @@ Http::get('/v1/collections/:collection/size')
     ->inject('response')
     ->action(function (string $collection, Adapter $adapter, Response $response) {
         $output = $adapter->getSizeOfCollection($collection);
-
-        $response->json([
-            'output' => $output
-        ]);
+        $response->json(['output' => $output]);
     });
 
 
@@ -255,10 +210,7 @@ Http::get('/v1/collections/:collection/counts/attributes')
         $collection = new Document($collection);
 
         $output = $adapter->getCountOfAttributes($collection);
-
-        $response->json([
-            'output' => $output
-        ]);
+        $response->json(['output' => $output]);
     });
 
 Http::get('/v1/collections/:collection/counts/indexes')
@@ -270,10 +222,7 @@ Http::get('/v1/collections/:collection/counts/indexes')
         $collection = new Document($collection);
 
         $output = $adapter->getCountOfIndexes($collection);
-
-        $response->json([
-            'output' => $output
-        ]);
+        $response->json(['output' => $output]);
     });
 
 Http::get('/v1/collections/:collection/widths/attributes')
@@ -285,10 +234,7 @@ Http::get('/v1/collections/:collection/widths/attributes')
         $collection = new Document($collection);
 
         $output = $adapter->getAttributeWidth($collection);
-
-        $response->json([
-            'output' => $output
-        ]);
+        $response->json(['output' => $output]);
     });
 
 Http::post('/v1/collections/:collection/documents')
@@ -301,10 +247,7 @@ Http::post('/v1/collections/:collection/documents')
         $document = new Document($document);
 
         $output = $adapter->createDocument($collection, $document);
-
-        $response->json([
-            'output' => $output
-        ]);
+        $response->json(['output' => $output]);
     });
 
 Http::put('/v1/collections/:collection/documents')
@@ -317,10 +260,7 @@ Http::put('/v1/collections/:collection/documents')
         $document = new Document($document);
 
         $output = $adapter->updateDocument($collection, $document);
-
-        $response->json([
-            'output' => $output
-        ]);
+        $response->json(['output' => $output]);
     });
 
 Http::delete('/v1/collections/:collection/documents/:document')
@@ -331,10 +271,7 @@ Http::delete('/v1/collections/:collection/documents/:document')
     ->inject('response')
     ->action(function (string $collection, string $document, Adapter $adapter, Response $response) {
         $output = $adapter->deleteDocument($collection, $document);
-
-        $response->json([
-            'output' => $output
-        ]);
+        $response->json(['output' => $output]);
     });
 
 Http::get('/v1/collections/:collection/documents/:document')
@@ -350,10 +287,7 @@ Http::get('/v1/collections/:collection/documents/:document')
         }
 
         $output = $adapter->getDocument($collection, $document, $queries);
-
-        $response->json([
-            'output' => $output
-        ]);
+        $response->json(['output' => $output]);
     });
 
 Http::get('/v1/collections/:collection/documents')
@@ -375,10 +309,7 @@ Http::get('/v1/collections/:collection/documents')
         }
 
         $output = $adapter->find($collection, $queries, $limit, $offset, $orderAttributes, $orderTypes, $cursor, $cursorDirection, $timeout);
-
-        $response->json([
-            'output' => $output
-        ]);
+        $response->json(['output' => $output]);
     });
 
 Http::get('/v1/collections/:collection/documents-sum')
@@ -396,10 +327,7 @@ Http::get('/v1/collections/:collection/documents-sum')
         }
 
         $output = $adapter->sum($collection, $attribute, $queries, $max, $timeout);
-
-        $response->json([
-            'output' => $output
-        ]);
+        $response->json(['output' => $output]);
     });
 
 Http::get('/v1/collections/:collection/documents-count')
@@ -416,10 +344,7 @@ Http::get('/v1/collections/:collection/documents-count')
         }
 
         $output = $adapter->count($collection, $queries, $max, $timeout);
-
-        $response->json([
-            'output' => $output
-        ]);
+        $response->json(['output' => $output]);
     });
 
 Http::patch('/v1/collections/:collection/documents/:document/increase')
@@ -434,10 +359,7 @@ Http::patch('/v1/collections/:collection/documents/:document/increase')
     ->inject('response')
     ->action(function (string $collection, string $document, string $attribute, float $value, ?float $min, ?float $max, Adapter $adapter, Response $response) {
         $output = $adapter->increaseDocumentAttribute($collection, $document, $attribute, $value, $min, $max);
-
-        $response->json([
-            'output' => $output
-        ]);
+        $response->json(['output' => $output]);
     });
 
 Http::post('/v1/collections/:collection/relationships')
@@ -452,10 +374,7 @@ Http::post('/v1/collections/:collection/relationships')
     ->inject('response')
     ->action(function (string $collection, string $relatedCollection, string $type, bool $twoWay, string $id, string $twoWayKey, Adapter $adapter, Response $response) {
         $output = $adapter->createRelationship($collection, $relatedCollection, $type, $twoWay, $id, $twoWayKey);
-
-        $response->json([
-            'output' => $output
-        ]);
+        $response->json(['output' => $output]);
     });
 
 Http::put('/v1/collections/:collection/relationships/:relatedCollection')
@@ -472,10 +391,7 @@ Http::put('/v1/collections/:collection/relationships/:relatedCollection')
     ->inject('response')
     ->action(function (string $collection, string $relatedCollection, string $type, bool $twoWay, string $key, string $twoWayKey, string $newKey, string $newTwoWayKey, Adapter $adapter, Response $response) {
         $output = $adapter->updateRelationship($collection, $relatedCollection, $type, $twoWay, $key, $twoWayKey, $newKey, $newTwoWayKey);
-
-        $response->json([
-            'output' => $output
-        ]);
+        $response->json(['output' => $output]);
     });
 
 Http::delete('/v1/collections/:collection/relationships/:relatedCollection')
@@ -491,8 +407,5 @@ Http::delete('/v1/collections/:collection/relationships/:relatedCollection')
     ->inject('response')
     ->action(function (string $collection, string $relatedCollection, string $type, bool $twoWay, string $key, string $twoWayKey, string $side, Adapter $adapter, Response $response) {
         $output = $adapter->deleteRelationship($collection, $relatedCollection, $type, $twoWay, $key, $twoWayKey, $side);
-
-        $response->json([
-            'output' => $output
-        ]);
+        $response->json(['output' => $output]);
     });
