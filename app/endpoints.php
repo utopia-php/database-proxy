@@ -278,7 +278,7 @@ Http::get('/v1/collections/:collection/documents/:document')
     ->groups(['api'])
     ->param('collection', '', new Text(MAX_STRING_SIZE, 0))
     ->param('document', '', new Text(MAX_STRING_SIZE, 0))
-    ->param('queries', [], new ArrayList(new Assoc(MAX_STRING_SIZE), MAX_ARRAY_SIZE), '', true)
+    ->param('queries', [], new ArrayList(new Text(MAX_STRING_SIZE), MAX_ARRAY_SIZE), '', true)
     ->inject('adapter')
     ->inject('response')
     ->action(function (string $collection, string $document, array $queries, Adapter $adapter, Response $response) {
