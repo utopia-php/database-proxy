@@ -200,31 +200,6 @@ Http::get('/v1/collections/:collection/size')
         $response->json(['output' => $output]);
     });
 
-
-Http::get('/v1/collections/:collection/counts/attributes')
-    ->groups(['api'])
-    ->param('collection', '', new Assoc(MAX_STRING_SIZE))
-    ->inject('adapter')
-    ->inject('response')
-    ->action(function (array $collection, Adapter $adapter, Response $response) {
-        $collection = new Document($collection);
-
-        $output = $adapter->getCountOfAttributes($collection);
-        $response->json(['output' => $output]);
-    });
-
-Http::get('/v1/collections/:collection/counts/indexes')
-    ->groups(['api'])
-    ->param('collection', '', new Assoc(MAX_STRING_SIZE))
-    ->inject('adapter')
-    ->inject('response')
-    ->action(function (array $collection, Adapter $adapter, Response $response) {
-        $collection = new Document($collection);
-
-        $output = $adapter->getCountOfIndexes($collection);
-        $response->json(['output' => $output]);
-    });
-
 Http::get('/v1/collections/:collection/widths/attributes')
     ->groups(['api'])
     ->param('collection', '', new Assoc(MAX_STRING_SIZE))
