@@ -258,7 +258,7 @@ Http::get('/v1/collections/:collection/documents/:document')
     ->inject('response')
     ->action(function (string $collection, string $document, array $queries, Adapter $adapter, Response $response) {
         foreach ($queries as $index => $query) {
-            $query = json_encode($query);
+            $query = json_decode($query, true);
             $queries[$index] = new Query($query['method'], $query['attribute'] ?? '', $query['values'] ?? []);
         }
 
