@@ -306,8 +306,6 @@ final class ProxyTest extends TestCase
      * Http::patch('/v1/collections/:collection/indexes/:index/name')
      * Http::delete('/v1/collections/:collection/indexes/:index')
      * Http::get('/v1/collections/:collection/size')
-     * Http::get('/v1/collections/:collection/counts/attributes')
-     * Http::get('/v1/collections/:collection/counts/indexes')
      * Http::get('/v1/collections/:collection/widths/attributes')
      * Http::post('/v1/collections/:collection/documents')
      * Http::put('/v1/collections/:collection/documents')
