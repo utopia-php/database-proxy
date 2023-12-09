@@ -253,7 +253,7 @@ Http::get('/v1/collections/:collection/documents/:document')
     ->groups(['api'])
     ->param('collection', '', new Text(MAX_STRING_SIZE, 0))
     ->param('document', '', new Text(MAX_STRING_SIZE, 0))
-    ->param('queries', [], new ArrayList(new Text(MAX_STRING_SIZE), MAX_ARRAY_SIZE), '', true)
+    ->param('queries', [], new ArrayList(new Text(MAX_STRING_SIZE, 0), MAX_ARRAY_SIZE), '', true)
     ->inject('adapter')
     ->inject('response')
     ->action(function (string $collection, string $document, array $queries, Adapter $adapter, Response $response) {
@@ -269,7 +269,7 @@ Http::get('/v1/collections/:collection/documents/:document')
 Http::get('/v1/collections/:collection/documents')
     ->groups(['api'])
     ->param('collection', '', new Text(MAX_STRING_SIZE, 0))
-    ->param('queries', [], new ArrayList(new Assoc(MAX_STRING_SIZE), MAX_ARRAY_SIZE), '', true)
+    ->param('queries', [], new ArrayList(new Text(MAX_STRING_SIZE, 0), MAX_ARRAY_SIZE), '', true)
     ->param('limit', 25, new Integer(), '', true)
     ->param('offset', null, new Integer(), '', true)
     ->param('orderAttributes', [], new ArrayList(new Text(MAX_STRING_SIZE, 0), MAX_ARRAY_SIZE), '', true)
@@ -280,8 +280,9 @@ Http::get('/v1/collections/:collection/documents')
     ->inject('adapter')
     ->inject('response')
     ->action(function (string $collection, array $queries, ?int $limit, ?int $offset, array $orderAttributes, array $orderTypes, array $cursor, string $cursorDirection, ?int $timeout, Adapter $adapter, Response $response) {
-        foreach ($queries as &$query) {
-            $query = new Query($query['method'], $query['attribute'] ?? '', $query['values'] ?? []);
+        foreach ($queries as $index => $query) {
+            $query = json_decode($query, true);
+            $queries[$index] = new Query($query['method'], $query['attribute'] ?? '', $query['values'] ?? []);
         }
 
         $output = $adapter->find($collection, $queries, $limit, $offset, $orderAttributes, $orderTypes, $cursor, $cursorDirection, $timeout);
