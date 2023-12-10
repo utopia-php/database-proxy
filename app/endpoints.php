@@ -78,12 +78,12 @@ Http::post('/v1/collections')
     ->inject('adapter')
     ->inject('response')
     ->action(function (string $collection, array $attributes, array $indexes, Adapter $adapter, Response $response) {
-        foreach ($attributes as &$attribute) {
-            $attribute = new Document($attribute);
+        foreach ($attributes as $key => $attribute) {
+            $attributes[$key] = new Document($attribute);
         }
 
-        foreach ($indexes as &$index) {
-            $index = new Document($index);
+        foreach ($indexes as $key => $index) {
+            $indexes[$key] = new Document($index);
         }
 
         $output = $adapter->createCollection($collection, $attributes, $indexes);
