@@ -12,6 +12,7 @@ use Utopia\Http\Validator\Boolean;
 use Utopia\Http\Validator\FloatValidator;
 use Utopia\Http\Validator\Integer;
 use Utopia\Http\Validator\Text;
+use function PHPUnit\Framework\isNull;
 
 Http::get('/mock/error')
     ->groups(['api', 'mock'])
@@ -270,16 +271,25 @@ Http::get('/v1/collections/:collection/documents')
     ->groups(['api'])
     ->param('collection', '', new Text(MAX_STRING_SIZE, 0))
     ->param('queries', [], new ArrayList(new Text(MAX_STRING_SIZE, 0), MAX_ARRAY_SIZE), '', true)
-    ->param('limit', 25, new Integer(), '', true)
-    ->param('offset', null, new Integer(), '', true)
+    ->param('limit', 25, new Integer(true), '', true)
+    ->param('offset', null, new Integer(true), '', true)
     ->param('orderAttributes', [], new ArrayList(new Text(MAX_STRING_SIZE, 0), MAX_ARRAY_SIZE), '', true)
     ->param('orderTypes', [], new ArrayList(new Text(MAX_STRING_SIZE, 0), MAX_ARRAY_SIZE), '', true)
     ->param('cursor', [], new Assoc(MAX_STRING_SIZE), '', true)
     ->param('cursorDirection', Database::CURSOR_AFTER, new Text(MAX_STRING_SIZE, 0), '', true)
-    ->param('timeout', null, new Integer(), '', true)
+    ->param('timeout', null, new Integer(true), '', true)
     ->inject('adapter')
     ->inject('response')
-    ->action(function (string $collection, array $queries, ?int $limit, ?int $offset, array $orderAttributes, array $orderTypes, array $cursor, string $cursorDirection, ?int $timeout, Adapter $adapter, Response $response) {
+    ->action(function (string $collection, array $queries, int|string $limit, int|string|null $offset, array $orderAttributes, array $orderTypes, array $cursor, string $cursorDirection, int|string|null $timeout, Adapter $adapter, Response $response) {
+
+        if(!isNull($limit)){
+            $limit = intval($limit);
+        }
+
+        if(!isNull($timeout)){
+            $timeout = intval($timeout);
+        }
+
         foreach ($queries as $index => $query) {
             $query = json_decode($query, true);
             $queries[$index] = new Query($query['method'], $query['attribute'] ?? '', $query['values'] ?? []);
@@ -310,14 +320,23 @@ Http::get('/v1/collections/:collection/documents-sum')
 Http::get('/v1/collections/:collection/documents-count')
     ->groups(['api'])
     ->param('collection', '', new Text(MAX_STRING_SIZE, 0))
-    ->param('queries', [], new ArrayList(new Assoc(MAX_STRING_SIZE), MAX_ARRAY_SIZE), '', true)
-    ->param('max', null, new Integer(), '', true)
-    ->param('timeout', null, new Integer(), '', true)
+    ->param('queries', [], new ArrayList(new Text(MAX_STRING_SIZE, 0), MAX_ARRAY_SIZE), '', true)
+    ->param('max', null, new Integer(true), '', true)
+    ->param('timeout', null, new Integer(true), '', true)
     ->inject('adapter')
     ->inject('response')
-    ->action(function (string $collection, array $queries, ?int $max, ?int $timeout, Adapter $adapter, Response $response) {
-        foreach ($queries as &$query) {
-            $query = new Query($query['method'], $query['attribute'] ?? '', $query['values'] ?? []);
+    ->action(function (string $collection, array $queries, int|string|null $max, int|string|null $timeout, Adapter $adapter, Response $response) {
+        if(!isNull($timeout)){
+            $timeout = intval($timeout);
+        }
+
+        if(!isNull($max)){
+            $max = intval($max);
+        }
+
+        foreach ($queries as $index => $query) {
+            $query = json_decode($query, true);
+            $queries[$index] = new Query($query['method'], $query['attribute'] ?? '', $query['values'] ?? []);
         }
 
         $output = $adapter->count($collection, $queries, $max, $timeout);
