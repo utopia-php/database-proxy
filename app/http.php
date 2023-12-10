@@ -75,7 +75,7 @@ $registry->set('pool', function () {
                     PDO::ATTR_TIMEOUT => 15, // Seconds
                     PDO::ATTR_PERSISTENT => false,
                     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                    PDO::ATTR_ERRMODE => Http::isDevelopment() ? PDO::ERRMODE_WARNING : PDO::ERRMODE_SILENT, // If in production mode, warnings are not displayed
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, // PDO will throw a PDOException
                     PDO::ATTR_EMULATE_PREPARES => true,
                     PDO::ATTR_STRINGIFY_FETCHES => true
                 ));

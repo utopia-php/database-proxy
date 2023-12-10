@@ -303,14 +303,23 @@ Http::get('/v1/collections/:collection/documents-sum')
     ->groups(['api'])
     ->param('collection', '', new Text(MAX_STRING_SIZE, 0))
     ->param('attribute', '', new Text(MAX_STRING_SIZE, 0))
-    ->param('queries', [], new ArrayList(new Assoc(MAX_STRING_SIZE), MAX_ARRAY_SIZE), '', true)
-    ->param('max', null, new Integer(), '', true)
-    ->param('timeout', null, new Integer(), '', true)
+    ->param('queries', [], new ArrayList(new Text(MAX_STRING_SIZE, 0), MAX_ARRAY_SIZE), '', true)
+    ->param('max', null, new Integer(true), '', true)
+    ->param('timeout', null, new Integer(true), '', true)
     ->inject('adapter')
     ->inject('response')
-    ->action(function (string $collection, string $attribute, array $queries, ?int $max, ?int $timeout, Adapter $adapter, Response $response) {
-        foreach ($queries as &$query) {
-            $query = new Query($query['method'], $query['attribute'] ?? '', $query['values'] ?? []);
+    ->action(function (string $collection, string $attribute, array $queries, int|string|null $max, int|string|null $timeout, Adapter $adapter, Response $response) {
+        if(!isNull($timeout)){
+            $timeout = intval($timeout);
+        }
+
+        if(!isNull($max)){
+            $max = intval($max);
+        }
+
+        foreach ($queries as $index => $query) {
+            $query = json_decode($query, true);
+            $queries[$index] = new Query($query['method'], $query['attribute'] ?? '', $query['values'] ?? []);
         }
 
         $output = $adapter->sum($collection, $attribute, $queries, $max, $timeout);
