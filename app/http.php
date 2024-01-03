@@ -195,47 +195,6 @@ Http::init()
         }
     });
 
-function logError(Log $log, Throwable $error, string $action, Logger $logger = null, ?Route $route = null): void
-{
-    Console::error('[Error] Type: ' . get_class($error));
-    Console::error('[Error] Message: ' . $error->getMessage());
-    Console::error('[Error] File: ' . $error->getFile());
-    Console::error('[Error] Line: ' . $error->getLine());
-
-    if ($logger && ($error->getCode() === 500 || $error->getCode() === 0)) {
-        $version = (string) Http::getEnv('UTOPIA_DATABASE_PROXY_VERSION', '');
-        if (empty($version)) {
-            $version = 'UNKNOWN';
-        }
-
-        $log->setNamespace("database-proxy");
-        $log->setServer(\gethostname() !== false ? \gethostname() : null);
-        $log->setVersion($version);
-        $log->setType(Log::TYPE_ERROR);
-        $log->setMessage($error->getMessage());
-
-        if ($route) {
-            $log->addTag('method', $route->getMethod());
-            $log->addTag('url', $route->getPath());
-        }
-
-        $log->addTag('code', \strval($error->getCode()));
-        $log->addTag('verboseType', get_class($error));
-
-        $log->addExtra('file', $error->getFile());
-        $log->addExtra('line', $error->getLine());
-        $log->addExtra('trace', $error->getTraceAsString());
-        $log->addExtra('detailedTrace', $error->getTrace());
-
-        $log->setAction($action);
-
-        $log->setEnvironment(Http::isProduction() ? Log::ENVIRONMENT_PRODUCTION : Log::ENVIRONMENT_STAGING);
-
-        $responseCode = $logger->addLog($log);
-        Console::info('Log pushed with status code: ' . $responseCode);
-    }
-}
-
 Http::error()
     ->inject('route')
     ->inject('error')
@@ -243,7 +202,43 @@ Http::error()
     ->inject('response')
     ->inject('log')
     ->action(function (?Route $route, Throwable $error, ?Logger $logger, Response $response, Log $log) {
-        logError($log, $error, "httpError", $logger, $route);
+        Console::error('[Error] Type: ' . get_class($error));
+        Console::error('[Error] Message: ' . $error->getMessage());
+        Console::error('[Error] File: ' . $error->getFile());
+        Console::error('[Error] Line: ' . $error->getLine());
+
+        if ($logger && ($error->getCode() === 500 || $error->getCode() === 0)) {
+            $version = (string) Http::getEnv('UTOPIA_DATABASE_PROXY_VERSION', '');
+            if (empty($version)) {
+                $version = 'UNKNOWN';
+            }
+
+            $log->setNamespace("database-proxy");
+            $log->setServer(\gethostname() !== false ? \gethostname() : null);
+            $log->setVersion($version);
+            $log->setType(Log::TYPE_ERROR);
+            $log->setMessage($error->getMessage());
+
+            if ($route) {
+                $log->addTag('method', $route->getMethod());
+                $log->addTag('url', $route->getPath());
+            }
+
+            $log->addTag('code', \strval($error->getCode()));
+            $log->addTag('verboseType', get_class($error));
+
+            $log->addExtra('file', $error->getFile());
+            $log->addExtra('line', $error->getLine());
+            $log->addExtra('trace', $error->getTraceAsString());
+            $log->addExtra('detailedTrace', $error->getTrace());
+
+            $log->setAction('httpError');
+
+            $log->setEnvironment(Http::isProduction() ? Log::ENVIRONMENT_PRODUCTION : Log::ENVIRONMENT_STAGING);
+
+            $responseCode = $logger->addLog($log);
+            Console::info('Log pushed with status code: ' . $responseCode);
+        }
 
         switch ($error->getCode()) {
             case 400: // Error allowed publicly
