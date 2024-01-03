@@ -20,9 +20,15 @@ final class ProxyTest extends TestCase
     protected bool $defaultAuthStatus = true;
     protected int $timeout = 10000; // Milliseconds
 
+    protected string $testUniqueId;
+
     protected function setUp(): void
     {
-        $this->namespace .= '-' . \uniqid();
+        $this->testUniqueId = \uniqid();
+        $this->namespace .= '-' . $this->testUniqueId;
+        $this->defaultDatabase .=  '-' . $this->testUniqueId;
+
+        $this->call('POST', '/databases', [ 'database' => $this->defaultDatabase ]);
     }
 
     /**
@@ -53,40 +59,56 @@ final class ProxyTest extends TestCase
 
     public function testDefaultDatabase(): void
     {
-        $response = $this->call('GET', '/databases/wrong-default-database');
+        $response = $this->call('GET', '/databases/' . $this->defaultDatabase);
+        self::assertEquals(200, $response->getStatusCode());
+        $body = \json_decode($response->getBody(), true);
+        self::assertTrue($body['output']);
+
+        $response = $this->call('GET', '/databases/' . $this->defaultDatabase . '-wrong');
         self::assertEquals(200, $response->getStatusCode());
         $body = \json_decode($response->getBody(), true);
         self::assertFalse($body['output']);
 
+        $response = $this->call('POST', '/databases', [ 'database' => $this->defaultDatabase . '-wrong' ]);
+        self::assertEquals(200, $response->getStatusCode());
+        $body = \json_decode($response->getBody(), true);
+        self::assertTrue($body['output']);
+
+        $response = $this->call('GET', '/databases/' . $this->defaultDatabase . '-wrong');
+        self::assertEquals(200, $response->getStatusCode());
+        $body = \json_decode($response->getBody(), true);
+        self::assertTrue($body['output']);
+
         $correctDefaultDatabase = $this->defaultDatabase;
-        $this->defaultDatabase = 'wrong-default-database';
+        $this->defaultDatabase .= '-wrong';
         $response = $this->call('POST', '/collections', [
             'collection' => 'default-db-test',
             'attributes' => [],
             'indexes' => []
         ]);
+        $this->defaultDatabase = $correctDefaultDatabase;
         self::assertEquals(200, $response->getStatusCode());
         $body = \json_decode($response->getBody(), true);
         self::assertTrue($body['output']);
 
-        $response = $this->call('GET', '/databases/wrong-default-database');
-        self::assertEquals(200, $response->getStatusCode());
-        $body = \json_decode($response->getBody(), true);
-        self::assertFalse($body['output']);
-
-        $response = $this->call('GET', '/collections/default-db-test?database=wrong-default-database');
+        $response = $this->call('GET', '/collections/default-db-test?database=' . $this->defaultDatabase . '-wrong');
 
         self::assertEquals(200, $response->getStatusCode());
         $body = \json_decode($response->getBody(), true);
-        self::assertFalse($body['output']);
+        self::assertTrue($body['output']);
 
-        $this->defaultDatabase = $correctDefaultDatabase;
+
+        $response = $this->call('GET', '/collections/default-db-test?database=' . $this->defaultDatabase);
+
+        self::assertEquals(200, $response->getStatusCode());
+        $body = \json_decode($response->getBody(), true);
+        self::assertFalse($body['output']);
     }
 
     public function testNamespace(): void
     {
         $correctNamespace = $this->namespace;
-        $this->namespace = $this->namespace . '-wrong';
+        $this->namespace .= '-wrong';
 
         $response = $this->call('GET', '/collections/cars?database=' . $this->defaultDatabase);
         self::assertEquals(200, $response->getStatusCode());
