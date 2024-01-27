@@ -3,7 +3,9 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use Utopia\CLI\Console;
+use Utopia\Database\Adapter;
 use Utopia\Database\Adapter\MariaDB;
+use Utopia\Database\Database;
 use Utopia\Database\Validator\Authorization;
 use Utopia\DSN\DSN;
 use Utopia\Http\Adapter\Swoole\Server;
@@ -20,8 +22,6 @@ use Utopia\Logger\Logger;
 use Utopia\Pools\Connection;
 use Utopia\Pools\Pool;
 use Utopia\Registry\Registry;
-
-use function Swoole\Coroutine\run;
 
 const MAX_ARRAY_SIZE = 100000;
 const MAX_STRING_SIZE = 20 * 1024 * 1024; // 20 MB
@@ -80,7 +80,7 @@ $registry->set('pool', function () {
                     PDO::ATTR_STRINGIFY_FETCHES => true
                 ));
                 $adapter = new MariaDB($pdo);
-                $adapter->setDefaultDatabase($dsnDatabase);
+                $adapter->setDatabase($dsnDatabase);
 
                 return $adapter;
         };
@@ -89,16 +89,13 @@ $registry->set('pool', function () {
     return $pool;
 });
 
-$http = new Server("0.0.0.0", Http::getEnv('UTOPIA_DATABASE_PROXY_PORT', '80'));
-
-$http
-    ->setConfig([
-        'open_http2_protocol' => true,
-        'http_compression' => true,
-        'http_compression_level' => 6,
-        'package_max_length' => PAYLOAD_SIZE,
-        'buffer_output_size' => PAYLOAD_SIZE,
-    ]);
+$http = new Server("0.0.0.0", Http::getEnv('UTOPIA_DATABASE_PROXY_PORT', '80'), [
+    'open_http2_protocol' => true,
+    'http_compression' => true,
+    'http_compression_level' => 6,
+    'package_max_length' => PAYLOAD_SIZE,
+    'buffer_output_size' => PAYLOAD_SIZE,
+]);
 
 Http::onStart()
     ->action(function () {
@@ -109,60 +106,62 @@ Http::setResource('registry', fn () => $registry);
 Http::setResource('logger', fn (Registry $registry) => $registry->get('logger'), ['registry']);
 Http::setResource('pool', fn (Registry $registry) => $registry->get('pool'), ['registry']);
 Http::setResource('log', fn () => new Log());
+Http::setResource('authorization', fn () => new Authorization());
 
 Http::setResource('adapterConnection', function (Pool $pool) {
     $connection = $pool->pop();
     return $connection;
 }, ['pool']);
 
-Http::setResource('adapter', function (Request $request, Connection $adapterConnection) {
+Http::setResource('adapter', function (Request $request, Connection $adapterConnection, Authorization $authorization) {
     $namespace = $request->getHeader('x-utopia-namespace', '');
     $timeout = $request->getHeader('x-utopia-timeout', '');
-    $defaultDatabase = $request->getHeader('x-utopia-default-database', '');
+    $database = $request->getHeader('x-utopia-database', '');
     $roles = $request->getHeader('x-utopia-auth-roles', '');
     $status = $request->getHeader('x-utopia-auth-status', '');
     $statusDefault = $request->getHeader('x-utopia-auth-status-default', '');
 
+    /**
+     * @var Adapter $resource
+     */
     $resource = $adapterConnection->getResource();
+    $resource->setAuthorization($authorization);
     $resource->setNamespace($namespace);
 
     if (!empty($timeout)) {
         $resource->setTimeout(\intval($timeout));
     } else {
-        $resource->clearTimeout();
+        $resource->clearTimeout(Database::EVENT_ALL);
     }
 
-    if (!empty($defaultDatabase)) {
-        $resource->setDefaultDatabase($defaultDatabase);
+    if (!empty($database)) {
+        $resource->setDatabase($database);
     } else {
-        $resource->setDefaultDatabase('');
+        $resource->setDatabase('');
     }
 
-    // TODO: This wont work with coroutines
-    Authorization::cleanRoles();
-    Authorization::setRole('any');
+    $authorization->cleanRoles();
+    $authorization->addRole('any');
     foreach (\explode(',', $roles) as $role) {
-        Authorization::setRole($role);
+        $authorization->addRole($role);
     }
 
-    // TODO: This wont work with coroutines
     if (!empty($statusDefault) && $statusDefault === 'false') {
-        Authorization::setDefaultStatus(false);
+        $authorization->setDefaultStatus(false);
     } else {
-        Authorization::setDefaultStatus(true);
+        $authorization->setDefaultStatus(true);
     }
 
-    // TODO: This wont work with coroutines
     if (!empty($status)) {
         if ($status === 'false') {
-            Authorization::disable();
+            $authorization->disable();
         } else {
-            Authorization::enable();
+            $authorization->enable();
         }
     }
 
     return $resource;
-}, ['request', 'adapterConnection']);
+}, ['request', 'adapterConnection', 'authorization']);
 
 Http::init()
     ->groups(['api'])
@@ -279,7 +278,5 @@ Http::error()
         $response->json($output);
     });
 
-run(function () use ($http) {
-    $app = new Http($http, 'UTC');
-    $app->start();
-});
+$app = new Http($http, 'UTC');
+$app->start();

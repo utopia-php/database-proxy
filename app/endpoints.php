@@ -276,15 +276,10 @@ Http::get('/v1/collections/:collection/documents')
     ->param('orderTypes', [], new ArrayList(new Text(MAX_STRING_SIZE, 0), MAX_ARRAY_SIZE), '', true)
     ->param('cursor', [], new Assoc(MAX_STRING_SIZE), '', true)
     ->param('cursorDirection', Database::CURSOR_AFTER, new Text(MAX_STRING_SIZE, 0), '', true)
-    ->param('timeout', null, new Integer(true), '', true)
     ->inject('adapter')
     ->inject('response')
-    ->action(function (string $collection, array $queries, int|string $limit, int|string|null $offset, array $orderAttributes, array $orderTypes, array $cursor, string $cursorDirection, int|string|null $timeout, Adapter $adapter, Response $response) {
+    ->action(function (string $collection, array $queries, int|string $limit, int|string|null $offset, array $orderAttributes, array $orderTypes, array $cursor, string $cursorDirection, Adapter $adapter, Response $response) {
         $limit = intval($limit);
-
-        if(!is_null($timeout)) {
-            $timeout = intval($timeout);
-        }
 
         if(!is_null($offset)) {
             $offset = intval($offset);
@@ -295,7 +290,7 @@ Http::get('/v1/collections/:collection/documents')
             $queries[$index] = new Query($query['method'], $query['attribute'] ?? '', $query['values'] ?? []);
         }
 
-        $output = $adapter->find($collection, $queries, $limit, $offset, $orderAttributes, $orderTypes, $cursor, $cursorDirection, $timeout);
+        $output = $adapter->find($collection, $queries, $limit, $offset, $orderAttributes, $orderTypes, $cursor, $cursorDirection);
         $response->json(['output' => $output]);
     });
 
@@ -305,14 +300,9 @@ Http::get('/v1/collections/:collection/documents-sum')
     ->param('attribute', '', new Text(MAX_STRING_SIZE, 0))
     ->param('queries', [], new ArrayList(new Text(MAX_STRING_SIZE, 0), MAX_ARRAY_SIZE), '', true)
     ->param('max', null, new Integer(true), '', true)
-    ->param('timeout', null, new Integer(true), '', true)
     ->inject('adapter')
     ->inject('response')
-    ->action(function (string $collection, string $attribute, array $queries, int|string|null $max, int|string|null $timeout, Adapter $adapter, Response $response) {
-        if(!is_null($timeout)) {
-            $timeout = intval($timeout);
-        }
-
+    ->action(function (string $collection, string $attribute, array $queries, int|string|null $max, Adapter $adapter, Response $response) {
         if(!is_null($max)) {
             $max = intval($max);
         }
@@ -322,7 +312,7 @@ Http::get('/v1/collections/:collection/documents-sum')
             $queries[$index] = new Query($query['method'], $query['attribute'] ?? '', $query['values'] ?? []);
         }
 
-        $output = $adapter->sum($collection, $attribute, $queries, $max, $timeout);
+        $output = $adapter->sum($collection, $attribute, $queries, $max);
         $response->json(['output' => $output]);
     });
 
@@ -331,14 +321,9 @@ Http::get('/v1/collections/:collection/documents-count')
     ->param('collection', '', new Text(MAX_STRING_SIZE, 0))
     ->param('queries', [], new ArrayList(new Text(MAX_STRING_SIZE, 0), MAX_ARRAY_SIZE), '', true)
     ->param('max', null, new Integer(true), '', true)
-    ->param('timeout', null, new Integer(true), '', true)
     ->inject('adapter')
     ->inject('response')
-    ->action(function (string $collection, array $queries, int|string|null $max, int|string|null $timeout, Adapter $adapter, Response $response) {
-        if(!is_null($timeout)) {
-            $timeout = intval($timeout);
-        }
-
+    ->action(function (string $collection, array $queries, int|string|null $max, Adapter $adapter, Response $response) {
         if(!is_null($max)) {
             $max = intval($max);
         }
@@ -348,7 +333,7 @@ Http::get('/v1/collections/:collection/documents-count')
             $queries[$index] = new Query($query['method'], $query['attribute'] ?? '', $query['values'] ?? []);
         }
 
-        $output = $adapter->count($collection, $queries, $max, $timeout);
+        $output = $adapter->count($collection, $queries, $max);
         $response->json(['output' => $output]);
     });
 

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c965011dcaabd16e1412e3630ae0686c",
+    "content-hash": "ad445a0c21278f56603b165891018278",
     "packages": [
         {
             "name": "jean85/pretty-package-versions",
@@ -219,16 +219,16 @@
         },
         {
             "name": "utopia-php/cache",
-            "version": "0.8.0",
+            "version": "0.9.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/utopia-php/cache.git",
-                "reference": "212e66100a1f32e674fca5d9bc317cc998303089"
+                "reference": "4fc7b4789b5f0ce74835c1ecfec4f3afe6f0e34e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/utopia-php/cache/zipball/212e66100a1f32e674fca5d9bc317cc998303089",
-                "reference": "212e66100a1f32e674fca5d9bc317cc998303089",
+                "url": "https://api.github.com/repos/utopia-php/cache/zipball/4fc7b4789b5f0ce74835c1ecfec4f3afe6f0e34e",
+                "reference": "4fc7b4789b5f0ce74835c1ecfec4f3afe6f0e34e",
                 "shasum": ""
             },
             "require": {
@@ -239,6 +239,7 @@
             },
             "require-dev": {
                 "laravel/pint": "1.2.*",
+                "phpstan/phpstan": "1.9.x-dev",
                 "phpunit/phpunit": "^9.3",
                 "vimeo/psalm": "4.13.1"
             },
@@ -262,9 +263,9 @@
             ],
             "support": {
                 "issues": "https://github.com/utopia-php/cache/issues",
-                "source": "https://github.com/utopia-php/cache/tree/0.8.0"
+                "source": "https://github.com/utopia-php/cache/tree/0.9.0"
             },
-            "time": "2022-10-16T16:48:09+00:00"
+            "time": "2024-01-07T18:11:23+00:00"
         },
         {
             "name": "utopia-php/cli",
@@ -321,31 +322,31 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/utopia-php/database.git",
-                "reference": "1d4ab3dfafbe7a3adfd167e5e288c19634c223ce"
+                "reference": "b64caf4f1a464b4a9f25b95b8ee7d4542d23d80c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/utopia-php/database/zipball/1d4ab3dfafbe7a3adfd167e5e288c19634c223ce",
-                "reference": "1d4ab3dfafbe7a3adfd167e5e288c19634c223ce",
+                "url": "https://api.github.com/repos/utopia-php/database/zipball/b64caf4f1a464b4a9f25b95b8ee7d4542d23d80c",
+                "reference": "b64caf4f1a464b4a9f25b95b8ee7d4542d23d80c",
                 "shasum": ""
             },
             "require": {
                 "ext-mbstring": "*",
                 "ext-pdo": "*",
                 "php": ">=8.0",
-                "utopia-php/cache": "0.8.*",
-                "utopia-php/framework": "dev-fix-v2-swoole-coroutines as 0.31.0",
+                "utopia-php/cache": "0.9.*",
+                "utopia-php/framework": "0.34.*",
                 "utopia-php/mongo": "0.3.*"
             },
             "require-dev": {
                 "fakerphp/faker": "^1.14",
-                "laravel/pint": "1.4.*",
+                "laravel/pint": "1.13.*",
                 "pcov/clobber": "^2.0",
                 "phpstan/phpstan": "1.10.*",
                 "phpunit/phpunit": "^9.4",
                 "rregeer/phpunit-coverage-check": "^0.3.1",
                 "swoole/ide-helper": "4.8.0",
-                "utopia-php/cli": "^0.14.0"
+                "utopia-php/cli": "0.17.*"
             },
             "type": "library",
             "autoload": {
@@ -369,7 +370,7 @@
                 "issues": "https://github.com/utopia-php/database/issues",
                 "source": "https://github.com/utopia-php/database/tree/feat-framework-v2"
             },
-            "time": "2023-10-05T09:43:50+00:00"
+            "time": "2024-01-25T11:30:20+00:00"
         },
         {
             "name": "utopia-php/dsn",
@@ -420,16 +421,16 @@
         },
         {
             "name": "utopia-php/framework",
-            "version": "dev-fix-v2-swoole-coroutines",
+            "version": "0.34.0",
             "source": {
                 "type": "git",
-                "url": "https://github.com/utopia-php/framework.git",
-                "reference": "7405c1fea69443c9034c2f6494a7cbd2d6e6813f"
+                "url": "https://github.com/utopia-php/http.git",
+                "reference": "f1f0df17b2fbe855b210a707320a3c85288a3c00"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/utopia-php/framework/zipball/7405c1fea69443c9034c2f6494a7cbd2d6e6813f",
-                "reference": "7405c1fea69443c9034c2f6494a7cbd2d6e6813f",
+                "url": "https://api.github.com/repos/utopia-php/http/zipball/f1f0df17b2fbe855b210a707320a3c85288a3c00",
+                "reference": "f1f0df17b2fbe855b210a707320a3c85288a3c00",
                 "shasum": ""
             },
             "require": {
@@ -453,17 +454,18 @@
             "license": [
                 "MIT"
             ],
-            "description": "A simple, light and advanced PHP framework",
+            "description": "A simple, light and advanced PHP HTTP framework",
             "keywords": [
                 "framework",
+                "http",
                 "php",
                 "upf"
             ],
             "support": {
-                "issues": "https://github.com/utopia-php/framework/issues",
-                "source": "https://github.com/utopia-php/framework/tree/fix-v2-swoole-coroutines"
+                "issues": "https://github.com/utopia-php/http/issues",
+                "source": "https://github.com/utopia-php/http/tree/0.34.0"
             },
-            "time": "2023-10-17T11:16:05+00:00"
+            "time": "2024-01-24T10:01:25+00:00"
         },
         {
             "name": "utopia-php/logger",
@@ -685,16 +687,16 @@
     "packages-dev": [
         {
             "name": "laravel/pint",
-            "version": "v1.13.7",
+            "version": "v1.13.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/pint.git",
-                "reference": "4157768980dbd977f1c4b4cc94997416d8b30ece"
+                "reference": "e2b5060885694ca30ac008c05dc9d47f10ed1abf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/pint/zipball/4157768980dbd977f1c4b4cc94997416d8b30ece",
-                "reference": "4157768980dbd977f1c4b4cc94997416d8b30ece",
+                "url": "https://api.github.com/repos/laravel/pint/zipball/e2b5060885694ca30ac008c05dc9d47f10ed1abf",
+                "reference": "e2b5060885694ca30ac008c05dc9d47f10ed1abf",
                 "shasum": ""
             },
             "require": {
@@ -705,13 +707,13 @@
                 "php": "^8.1.0"
             },
             "require-dev": {
-                "friendsofphp/php-cs-fixer": "^3.38.0",
-                "illuminate/view": "^10.30.1",
+                "friendsofphp/php-cs-fixer": "^3.47.1",
+                "illuminate/view": "^10.41.0",
+                "larastan/larastan": "^2.8.1",
                 "laravel-zero/framework": "^10.3.0",
-                "mockery/mockery": "^1.6.6",
-                "nunomaduro/larastan": "^2.6.4",
+                "mockery/mockery": "^1.6.7",
                 "nunomaduro/termwind": "^1.15.1",
-                "pestphp/pest": "^2.24.2"
+                "pestphp/pest": "^2.31.0"
             },
             "bin": [
                 "builds/pint"
@@ -747,7 +749,7 @@
                 "issues": "https://github.com/laravel/pint/issues",
                 "source": "https://github.com/laravel/pint"
             },
-            "time": "2023-12-05T19:43:12+00:00"
+            "time": "2024-01-22T09:04:15+00:00"
         },
         {
             "name": "myclabs/deep-copy",
@@ -810,25 +812,27 @@
         },
         {
             "name": "nikic/php-parser",
-            "version": "v4.18.0",
+            "version": "v5.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nikic/PHP-Parser.git",
-                "reference": "1bcbb2179f97633e98bbbc87044ee2611c7d7999"
+                "reference": "4a21235f7e56e713259a6f76bf4b5ea08502b9dc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/1bcbb2179f97633e98bbbc87044ee2611c7d7999",
-                "reference": "1bcbb2179f97633e98bbbc87044ee2611c7d7999",
+                "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/4a21235f7e56e713259a6f76bf4b5ea08502b9dc",
+                "reference": "4a21235f7e56e713259a6f76bf4b5ea08502b9dc",
                 "shasum": ""
             },
             "require": {
+                "ext-ctype": "*",
+                "ext-json": "*",
                 "ext-tokenizer": "*",
-                "php": ">=7.0"
+                "php": ">=7.4"
             },
             "require-dev": {
                 "ircmaxell/php-yacc": "^0.0.7",
-                "phpunit/phpunit": "^6.5 || ^7.0 || ^8.0 || ^9.0"
+                "phpunit/phpunit": "^7.0 || ^8.0 || ^9.0"
             },
             "bin": [
                 "bin/php-parse"
@@ -836,7 +840,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "4.9-dev"
+                    "dev-master": "5.0-dev"
                 }
             },
             "autoload": {
@@ -860,9 +864,9 @@
             ],
             "support": {
                 "issues": "https://github.com/nikic/PHP-Parser/issues",
-                "source": "https://github.com/nikic/PHP-Parser/tree/v4.18.0"
+                "source": "https://github.com/nikic/PHP-Parser/tree/v5.0.0"
             },
-            "time": "2023-12-10T21:03:43+00:00"
+            "time": "2024-01-07T17:17:35+00:00"
         },
         {
             "name": "phar-io/manifest",
@@ -977,16 +981,16 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "1.10.50",
+            "version": "1.10.57",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "06a98513ac72c03e8366b5a0cb00750b487032e4"
+                "reference": "1627b1d03446904aaa77593f370c5201d2ecc34e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/06a98513ac72c03e8366b5a0cb00750b487032e4",
-                "reference": "06a98513ac72c03e8366b5a0cb00750b487032e4",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/1627b1d03446904aaa77593f370c5201d2ecc34e",
+                "reference": "1627b1d03446904aaa77593f370c5201d2ecc34e",
                 "shasum": ""
             },
             "require": {
@@ -1035,7 +1039,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-12-13T10:59:42+00:00"
+            "time": "2024-01-24T11:51:34+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
@@ -2496,23 +2500,9 @@
             "time": "2023-10-10T11:58:32+00:00"
         }
     ],
-    "aliases": [
-        {
-            "package": "utopia-php/database",
-            "version": "dev-feat-framework-v2",
-            "alias": "0.44.99",
-            "alias_normalized": "0.44.99.0"
-        },
-        {
-            "package": "utopia-php/framework",
-            "version": "dev-fix-v2-swoole-coroutines",
-            "alias": "0.32.99",
-            "alias_normalized": "0.32.99.0"
-        }
-    ],
+    "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "utopia-php/framework": 20,
         "utopia-php/database": 20
     },
     "prefer-stable": false,

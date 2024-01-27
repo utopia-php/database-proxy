@@ -39,7 +39,7 @@ final class ProxyTest extends TestCase
         return Client::fetch($this->endpoint . $endpoint, [
             'x-utopia-secret' => $this->secret,
             'x-utopia-namespace' => $this->namespace,
-            'x-utopia-default-database' => $this->defaultDatabase,
+            'x-utopia-database' => $this->defaultDatabase,
             'x-utopia-auth-roles' => \implode(',', $roles),
             'x-utopia-auth-status' => $skipAuth ? 'false' : 'true',
             'x-utopia-auth-status-default' => $this->defaultAuthStatus ? 'true' : 'false',

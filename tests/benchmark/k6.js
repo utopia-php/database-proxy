@@ -6,7 +6,7 @@ export default function () {
         headers: {
             'x-utopia-secret': 'proxy-secret-key',
             'x-utopia-namespace': 'utopia',
-            'x-utopia-default-database': 'appwrite'
+            'x-utopia-database': 'appwrite'
         }
     });
     check(res, { 'status was 200': (r) => r.status == 200 });
