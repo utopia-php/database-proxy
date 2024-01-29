@@ -32,13 +32,13 @@ ini_set('memory_limit', '-1');
 
 require_once __DIR__ . '/endpoints.php';
 
-Http::setMode((string) Http::getEnv('UTOPIA_DATABASE_PROXY_ENV', Http::MODE_TYPE_PRODUCTION));
+Http::setMode((string) Http::getEnv('UTOPIA_DATA_API_ENV', Http::MODE_TYPE_PRODUCTION));
 
 $registry = new Registry();
 
 $registry->set('logger', function () {
-    $providerName = Http::getEnv('UTOPIA_DATABASE_PROXY_LOGGING_PROVIDER', '');
-    $providerConfig = Http::getEnv('UTOPIA_DATABASE_PROXY_LOGGING_CONFIG', '');
+    $providerName = Http::getEnv('UTOPIA_DATA_API_LOGGING_PROVIDER', '');
+    $providerConfig = Http::getEnv('UTOPIA_DATA_API_LOGGING_CONFIG', '');
     $logger = null;
 
     if (!empty($providerName) && !empty($providerConfig) && Logger::hasProvider($providerName)) {
@@ -57,7 +57,7 @@ $registry->set('logger', function () {
 });
 
 $registry->set('pool', function () {
-    $dsnString = Http::getEnv('UTOPIA_DATABASE_PROXY_SECRET_CONNECTION', '') ?? '';
+    $dsnString = Http::getEnv('UTOPIA_DATA_API_SECRET_CONNECTION', '') ?? '';
 
     $dsn = new DSN($dsnString);
     $dsnHost = $dsn->getHost();
@@ -89,7 +89,7 @@ $registry->set('pool', function () {
     return $pool;
 });
 
-$http = new Server("0.0.0.0", Http::getEnv('UTOPIA_DATABASE_PROXY_PORT', '80'), [
+$http = new Server("0.0.0.0", Http::getEnv('UTOPIA_DATA_API_PORT', '80'), [
     'open_http2_protocol' => true,
     'http_compression' => true,
     'http_compression_level' => 6,
@@ -167,7 +167,7 @@ Http::init()
     ->groups(['api'])
     ->inject('request')
     ->action(function (Request $request) {
-        $secret = Http::getEnv('UTOPIA_DATABASE_PROXY_SECRET', '');
+        $secret = Http::getEnv('UTOPIA_DATA_API_SECRET', '');
         $header = $request->getHeader('x-utopia-secret', '');
 
         if ($header !== $secret) {
@@ -207,7 +207,7 @@ Http::error()
         Console::error('[Error] Line: ' . $error->getLine());
 
         if ($logger && ($error->getCode() === 500 || $error->getCode() === 0)) {
-            $version = (string) Http::getEnv('UTOPIA_DATABASE_PROXY_VERSION', '');
+            $version = (string) Http::getEnv('UTOPIA_DATA_API_VERSION', '');
             if (empty($version)) {
                 $version = 'UNKNOWN';
             }
@@ -266,7 +266,7 @@ Http::error()
             'file' => $error->getFile(),
             'line' => $error->getLine(),
             'trace' => $error->getTrace(),
-            'version' => Http::getEnv('UTOPIA_DATABASE_PROXY_VERSION', 'UNKNOWN')
+            'version' => Http::getEnv('UTOPIA_DATA_API_VERSION', 'UNKNOWN')
         ];
 
         $response

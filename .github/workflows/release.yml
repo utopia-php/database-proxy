@@ -34,7 +34,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           build-args: |
-            UTOPIA_DATABASE_PROXY_VERSION=${{ env.TAG }}
+            UTOPIA_DATA_API_VERSION=${{ env.TAG }}
           platforms: linux/amd64,linux/arm64,linux/arm/v6,linux/arm/v7
           context: .
           push: true
