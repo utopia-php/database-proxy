@@ -199,7 +199,6 @@ Http::post('/v1/queries')
     ->inject('request')
     ->inject('response')
     ->action(function (string $query, array $params, Adapter $adapter, Request $request, Response $response) {
-
         $body = $request->getRawPayload();
         $bodyJson = \json_decode($body, false);
 
@@ -208,7 +207,11 @@ Http::post('/v1/queries')
 
             foreach ($json as $param) {
                 if(\is_object($param)) {
-                    $keys[] = new Document((array) $param);
+                    $document = (array) $param;
+                    $document = json_decode(json_encode($document), true);
+                    $document = new Document($document);
+
+                    $keys[] = $document;
                 } elseif(\is_array($param)) {
                     $keys[] = $self($self, $param);
                 } else {
@@ -250,6 +253,7 @@ Http::error()
     ->inject('response')
     ->inject('log')
     ->action(function (?Route $route, Throwable $error, ?Logger $logger, Response $response, Log $log) {
+        Console::error('[Error] Type: ' . get_class($error));
         Console::error('[Error] Type: ' . get_class($error));
         Console::error('[Error] Message: ' . $error->getMessage());
         Console::error('[Error] File: ' . $error->getFile());

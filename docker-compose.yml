@@ -2,7 +2,7 @@ version: '3.1'
 
 services:
   data-api:
-    container_name: tests
+    container_name: data-api
     image: proxy-dev
     build:
       context: .
