@@ -6,6 +6,7 @@ use Utopia\CLI\Console;
 use Utopia\Database\Adapter;
 use Utopia\Database\Adapter\MariaDB;
 use Utopia\Database\Database;
+use Utopia\Database\Document;
 use Utopia\Database\Validator\Authorization;
 use Utopia\DSN\DSN;
 use Utopia\Http\Adapter\Swoole\Server;
@@ -13,6 +14,9 @@ use Utopia\Http\Http;
 use Utopia\Http\Request;
 use Utopia\Http\Response;
 use Utopia\Http\Route;
+use Utopia\Http\Validator\ArrayList;
+use Utopia\Http\Validator\Text;
+use Utopia\Http\Validator\Wildcard;
 use Utopia\Logger\Adapter\AppSignal;
 use Utopia\Logger\Adapter\LogOwl;
 use Utopia\Logger\Adapter\Raygun;
@@ -29,8 +33,6 @@ const PAYLOAD_SIZE = 20 * 1024 * 1024; // 20MB
 
 // Unlimited memory limit to handle as many coroutines/requests as possible
 ini_set('memory_limit', '-1');
-
-require_once __DIR__ . '/endpoints.php';
 
 Http::setMode((string) Http::getEnv('UTOPIA_DATA_API_ENV', Http::MODE_TYPE_PRODUCTION));
 
@@ -175,6 +177,61 @@ Http::init()
         }
     });
 
+Http::init()
+    ->groups(['mock'])
+    ->action(function () {
+        if (!Http::isDevelopment()) {
+            throw new Exception('Mock endpoints are not implemented on production.', 404);
+        }
+    });
+
+Http::get('/mock/error')
+    ->groups(['api', 'mock'])
+    ->action(function () {
+        throw new Exception('Mock error', 500);
+    });
+
+Http::post('/v1/queries')
+    ->groups(['api'])
+    ->param('query', '', new Text(1024, 1), 'Method name to run with query')
+    ->param('params', [], new ArrayList(new Wildcard(), 1024), 'Parameters to pass into a method call', true)
+    ->inject('adapter')
+    ->inject('request')
+    ->inject('response')
+    ->action(function (string $query, array $params, Adapter $adapter, Request $request, Response $response) {
+
+        $body = $request->getRawPayload();
+        $bodyJson = \json_decode($body, false);
+
+        $processArray = function (mixed $self, mixed $json) {
+            $keys = [];
+
+            foreach ($json as $param) {
+                if(\is_object($param)) {
+                    $keys[] = new Document((array) $param);
+                } elseif(\is_array($param)) {
+                    $keys[] = $self($self, $param);
+                } else {
+                    $keys[] = $param;
+                }
+            }
+
+            return $keys;
+        };
+
+        $typedParams = $processArray($processArray, $bodyJson->params);
+
+        /**
+         * @var callable $method
+         */
+        $method = [$adapter, $query];
+        $output = call_user_func_array($method, $typedParams);
+
+        $response->json([
+            'output' => $output
+        ]);
+    });
+
 Http::shutdown()
     ->inject('utopia')
     ->inject('context')
@@ -183,14 +240,6 @@ Http::shutdown()
 
         if (isset($connection)) {
             $connection->reclaim();
-        }
-    });
-
-Http::init()
-    ->groups(['mock'])
-    ->action(function () {
-        if (!Http::isDevelopment()) {
-            throw new Exception('Mock endpoints are not implemented on production.', 404);
         }
     });
 

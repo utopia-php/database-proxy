@@ -1,7 +1,7 @@
 version: '3.1'
 
 services:
-  tests:
+  data-api:
     container_name: tests
     image: proxy-dev
     build:
@@ -18,6 +18,15 @@ services:
       - UTOPIA_DATA_API_SECRET_CONNECTION
       - UTOPIA_DATA_API_LOGGING_PROVIDER
       - UTOPIA_DATA_API_LOGGING_CONFIG
+
+  adminer:
+    image: adminer
+    container_name: appwrite-adminer
+    restart: always
+    ports:
+      - 9506:8080
+    networks:
+      - database
 
   mariadb:
     image: mariadb:10.7
