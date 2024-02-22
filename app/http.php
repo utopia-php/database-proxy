@@ -7,6 +7,7 @@ use Utopia\Database\Adapter;
 use Utopia\Database\Adapter\MariaDB;
 use Utopia\Database\Database;
 use Utopia\Database\Document;
+use Utopia\Database\Query;
 use Utopia\Database\Validator\Authorization;
 use Utopia\DSN\DSN;
 use Utopia\Http\Adapter\Swoole\Server;
@@ -207,11 +208,15 @@ Http::post('/v1/queries')
 
             foreach ($json as $param) {
                 if(\is_object($param)) {
-                    $document = (array) $param;
-                    $document = json_decode(json_encode($document), true);
-                    $document = new Document($document);
-
-                    $keys[] = $document;
+                    if (property_exists($param, '$id')) {
+                        $document = (array) $param;
+                        $document = json_decode(json_encode($document), true);
+                        $document = new Document($document);
+                        $keys[] = $document;
+                    } else {
+                        $query = new Query($param->method, $param->attribute, $param->values);
+                        $keys[] = $query;
+                    }
                 } elseif(\is_array($param)) {
                     $keys[] = $self($self, $param);
                 } else {
