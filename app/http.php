@@ -118,7 +118,6 @@ Http::setResource('adapterConnection', function (Pool $pool) {
 
 Http::setResource('adapter', function (Request $request, Connection $adapterConnection, Authorization $authorization) {
     $namespace = $request->getHeader('x-utopia-namespace', '');
-    $timeout = $request->getHeader('x-utopia-timeout', '');
     $database = $request->getHeader('x-utopia-database', '');
     $roles = $request->getHeader('x-utopia-auth-roles', '');
     $status = $request->getHeader('x-utopia-auth-status', '');
@@ -130,12 +129,6 @@ Http::setResource('adapter', function (Request $request, Connection $adapterConn
     $resource = $adapterConnection->getResource();
     $resource->setAuthorization($authorization);
     $resource->setNamespace($namespace);
-
-    if (!empty($timeout)) {
-        $resource->setTimeout(\intval($timeout));
-    } else {
-        $resource->clearTimeout(Database::EVENT_ALL);
-    }
 
     if (!empty($database)) {
         $resource->setDatabase($database);
@@ -208,14 +201,14 @@ Http::post('/v1/queries')
 
             foreach ($json as $param) {
                 if(\is_object($param)) {
-                    if (property_exists($param, '$id')) {
+                    if (property_exists($param, 'method') && !property_exists($param, '$id')) {
+                        $query = new Query($param->method, $param->attribute, $param->values);
+                        $keys[] = $query;
+                    } else {
                         $document = (array) $param;
                         $document = json_decode(json_encode($document), true);
                         $document = new Document($document);
                         $keys[] = $document;
-                    } else {
-                        $query = new Query($param->method, $param->attribute, $param->values);
-                        $keys[] = $query;
                     }
                 } elseif(\is_array($param)) {
                     $keys[] = $self($self, $param);
