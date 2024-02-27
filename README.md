@@ -1,1 +1,4 @@
-# Utopia PHP Database Proxy
+# Utopia PHP Data API
+
+Build:
+docker build -t data-api . 

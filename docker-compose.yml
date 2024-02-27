@@ -1,0 +1,44 @@
+version: '3.1'
+
+services:
+  data-api:
+    container_name: data-api
+    image: proxy-dev
+    build:
+      context: .
+    networks:
+      - database
+    volumes:
+      - ./app:/usr/local/app
+    ports:
+      - 8088:80
+    environment:
+      - UTOPIA_DATA_API_ENV
+      - UTOPIA_DATA_API_SECRET
+      - UTOPIA_DATA_API_SECRET_CONNECTION
+      - UTOPIA_DATA_API_LOGGING_PROVIDER
+      - UTOPIA_DATA_API_LOGGING_CONFIG
+
+  adminer:
+    image: adminer
+    container_name: appwrite-adminer
+    restart: always
+    ports:
+      - 9506:8080
+    networks:
+      - database
+
+  mariadb:
+    image: mariadb:10.7
+    container_name: utopia-mariadb
+    command: 'mysqld --max_connections=500'
+    networks:
+      - database
+    ports:
+      - 8100:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MARIADB_DATABASE=appwrite
+
+networks:
+  database:
