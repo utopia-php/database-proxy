@@ -13,7 +13,7 @@ use Utopia\Fetch\Response;
 
 final class ProxyTest extends TestCase
 {
-    protected string $endpoint = 'http://tests/v1';
+    protected string $endpoint = 'http://data-api/v1';
     protected string $secret = 'proxy-secret-key';
     protected string $namespace = 'my-namespace';
     protected string $database = 'appwrite';
@@ -36,6 +36,15 @@ final class ProxyTest extends TestCase
      */
     private function call(string $method, string $endpoint, mixed $body = [], array $roles = [], bool $skipAuth = false): Response
     {
+        if(isset($body['params'])) {
+            $body['params'] = \base64_encode(\serialize($body['params']));
+        }
+
+        $timeouts = \json_encode(['*' => $this->timeout]);
+        if($timeouts == false) {
+            $timeouts = '';
+        }
+
         return Client::fetch($this->endpoint . $endpoint, [
             'x-utopia-secret' => $this->secret,
             'x-utopia-namespace' => $this->namespace,
@@ -43,7 +52,7 @@ final class ProxyTest extends TestCase
             'x-utopia-auth-roles' => \implode(',', $roles),
             'x-utopia-auth-status' => $skipAuth ? 'false' : 'true',
             'x-utopia-auth-status-default' => $this->defaultAuthStatus ? 'true' : 'false',
-            'x-utopia-timeout' => \strval($this->timeout),
+            'x-utopia-timeouts' => $timeouts,
             'content-type' => 'application/json'
         ], $method, $body);
     }
@@ -75,7 +84,7 @@ final class ProxyTest extends TestCase
     public function testMock(): void
     {
         $correctEndpoint = $this->endpoint;
-        $this->endpoint = 'http://tests/mock';
+        $this->endpoint = 'http://data-api/mock';
         $response = $this->call('GET', '/error');
         self::assertEquals(500, $response->getStatusCode());
         $this->endpoint = $correctEndpoint;
@@ -260,4 +269,7 @@ final class ProxyTest extends TestCase
         $body = \json_decode($response->getBody(), true);
         self::assertCount(4, $body['output']);
     }
+
+    // TODO: Tests for x-utopia-share-tables
+    // TODO: Tests for x-utopia-tenant
 }

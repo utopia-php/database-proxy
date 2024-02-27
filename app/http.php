@@ -118,6 +118,8 @@ Http::setResource('adapter', function (Request $request, Connection $adapterConn
     $roles = $request->getHeader('x-utopia-auth-roles', '');
     $status = $request->getHeader('x-utopia-auth-status', '');
     $statusDefault = $request->getHeader('x-utopia-auth-status-default', '');
+    $shareTables = $request->getHeader('x-utopia-share-tables', '');
+    $tenant = $request->getHeader('x-utopia-tenant', '');
 
     $timeouts = \json_decode($timeoutsString, true);
 
@@ -138,6 +140,18 @@ Http::setResource('adapter', function (Request $request, Connection $adapterConn
         $resource->setDatabase($database);
     } else {
         $resource->setDatabase('');
+    }
+
+    if (!empty($shareTables)) {
+        if ($shareTables === 'false') {
+            $resource->setShareTables(false);
+        } else {
+            $resource->setShareTables(true);
+        }
+    }
+
+    if (!empty($tenant)) {
+        $resource->setTenant(\intval($tenant));
     }
 
     $authorization->cleanRoles();
@@ -197,7 +211,12 @@ Http::post('/v1/queries')
     ->inject('request')
     ->inject('response')
     ->action(function (string $query, string $params, Adapter $adapter, Request $request, Response $response) {
-        $typedParams = \unserialize(\base64_decode($params));
+
+        if(empty($params)) {
+            $typedParams = [];
+        } else {
+            $typedParams = \unserialize(\base64_decode($params));
+        }
 
         /**
          * @var callable $method
