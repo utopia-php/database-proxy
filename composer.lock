@@ -319,12 +319,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/utopia-php/database.git",
-                "reference": "6dd6562e876c8af6fac3fc7e7fb188e443162c61"
+                "reference": "79fd5790227e039832372f2c6c9c284f6f1284bb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/utopia-php/database/zipball/6dd6562e876c8af6fac3fc7e7fb188e443162c61",
-                "reference": "6dd6562e876c8af6fac3fc7e7fb188e443162c61",
+                "url": "https://api.github.com/repos/utopia-php/database/zipball/79fd5790227e039832372f2c6c9c284f6f1284bb",
+                "reference": "79fd5790227e039832372f2c6c9c284f6f1284bb",
                 "shasum": ""
             },
             "require": {
@@ -367,7 +367,7 @@
                 "issues": "https://github.com/utopia-php/database/issues",
                 "source": "https://github.com/utopia-php/database/tree/feat-framework-v2"
             },
-            "time": "2024-02-22T10:24:52+00:00"
+            "time": "2024-02-27T10:05:08+00:00"
         },
         {
             "name": "utopia-php/dsn",
@@ -2514,5 +2514,5 @@
     "platform-overrides": {
         "php": "8.1"
     },
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.3.0"
 }

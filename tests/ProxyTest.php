@@ -18,6 +18,7 @@ final class ProxyTest extends TestCase
     protected string $namespace = 'my-namespace';
     protected string $database = 'appwrite';
     protected bool $defaultAuthStatus = true;
+    protected int $timeout = 10000; // Milliseconds
 
     protected string $testUniqueId;
 
@@ -42,6 +43,7 @@ final class ProxyTest extends TestCase
             'x-utopia-auth-roles' => \implode(',', $roles),
             'x-utopia-auth-status' => $skipAuth ? 'false' : 'true',
             'x-utopia-auth-status-default' => $this->defaultAuthStatus ? 'true' : 'false',
+            'x-utopia-timeout' => \strval($this->timeout),
             'content-type' => 'application/json'
         ], $method, $body);
     }
@@ -53,6 +55,21 @@ final class ProxyTest extends TestCase
         $response = $this->call('POST', '/queries', [ 'query' => 'ping' ]);
         self::assertEquals(401, $response->getStatusCode());
         $this->secret = $correctSecret;
+    }
+
+    public function testTimeout(): void
+    {
+        $correctTimeout = $this->timeout;
+
+        $this->timeout = 600000;
+        $response = $this->call('POST', '/queries', [ 'query' => 'ping' ]);
+        self::assertEquals(200, $response->getStatusCode());
+
+        $this->timeout = -1;
+        $response = $this->call('POST', '/queries', [ 'query' => 'ping' ]);
+        self::assertEquals(500, $response->getStatusCode());
+
+        $this->timeout = $correctTimeout;
     }
 
     public function testMock(): void

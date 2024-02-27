@@ -5,9 +5,6 @@ require_once __DIR__ . '/../vendor/autoload.php';
 use Utopia\CLI\Console;
 use Utopia\Database\Adapter;
 use Utopia\Database\Adapter\MariaDB;
-use Utopia\Database\Database;
-use Utopia\Database\Document;
-use Utopia\Database\Query;
 use Utopia\Database\Validator\Authorization;
 use Utopia\DSN\DSN;
 use Utopia\Http\Adapter\Swoole\Server;
@@ -15,9 +12,7 @@ use Utopia\Http\Http;
 use Utopia\Http\Request;
 use Utopia\Http\Response;
 use Utopia\Http\Route;
-use Utopia\Http\Validator\ArrayList;
 use Utopia\Http\Validator\Text;
-use Utopia\Http\Validator\Wildcard;
 use Utopia\Logger\Adapter\AppSignal;
 use Utopia\Logger\Adapter\LogOwl;
 use Utopia\Logger\Adapter\Raygun;
@@ -118,10 +113,13 @@ Http::setResource('adapterConnection', function (Pool $pool) {
 
 Http::setResource('adapter', function (Request $request, Connection $adapterConnection, Authorization $authorization) {
     $namespace = $request->getHeader('x-utopia-namespace', '');
+    $timeoutsString = $request->getHeader('x-utopia-timeouts', '[]');
     $database = $request->getHeader('x-utopia-database', '');
     $roles = $request->getHeader('x-utopia-auth-roles', '');
     $status = $request->getHeader('x-utopia-auth-status', '');
     $statusDefault = $request->getHeader('x-utopia-auth-status-default', '');
+
+    $timeouts = \json_decode($timeoutsString, true);
 
     /**
      * @var Adapter $resource
@@ -129,6 +127,12 @@ Http::setResource('adapter', function (Request $request, Connection $adapterConn
     $resource = $adapterConnection->getResource();
     $resource->setAuthorization($authorization);
     $resource->setNamespace($namespace);
+
+    $resource->clearTransformations();
+
+    foreach ($timeouts as $event => $timeout) {
+        $resource->setTimeout(\intval($timeout), $event);
+    }
 
     if (!empty($database)) {
         $resource->setDatabase($database);
@@ -188,39 +192,12 @@ Http::get('/mock/error')
 Http::post('/v1/queries')
     ->groups(['api'])
     ->param('query', '', new Text(1024, 1), 'Method name to run with query')
-    ->param('params', [], new ArrayList(new Wildcard(), 1024), 'Parameters to pass into a method call', true)
+    ->param('params', '', new Text(0, 0), 'Base64 of serialized parameters to pass into a method call', true)
     ->inject('adapter')
     ->inject('request')
     ->inject('response')
-    ->action(function (string $query, array $params, Adapter $adapter, Request $request, Response $response) {
-        $body = $request->getRawPayload();
-        $bodyJson = \json_decode($body, false);
-
-        $processArray = function (mixed $self, mixed $json) {
-            $keys = [];
-
-            foreach ($json as $param) {
-                if(\is_object($param)) {
-                    if (property_exists($param, 'method') && !property_exists($param, '$id')) {
-                        $query = new Query($param->method, $param->attribute, $param->values);
-                        $keys[] = $query;
-                    } else {
-                        $document = (array) $param;
-                        $document = json_decode(json_encode($document), true);
-                        $document = new Document($document);
-                        $keys[] = $document;
-                    }
-                } elseif(\is_array($param)) {
-                    $keys[] = $self($self, $param);
-                } else {
-                    $keys[] = $param;
-                }
-            }
-
-            return $keys;
-        };
-
-        $typedParams = $processArray($processArray, $bodyJson->params);
+    ->action(function (string $query, string $params, Adapter $adapter, Request $request, Response $response) {
+        $typedParams = \unserialize(\base64_decode($params));
 
         /**
          * @var callable $method
