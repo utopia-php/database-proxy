@@ -1,5 +1,5 @@
 {
-    "name": "utopia/database-proxy",
+    "name": "utopia/data-api",
     "description": "HTTP proxy to manage Utopia Database connections.",
     "type": "project",
     "license": "MIT",
