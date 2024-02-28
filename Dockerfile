@@ -10,9 +10,9 @@ RUN composer install --ignore-platform-reqs --optimize-autoloader \
     --no-plugins --no-scripts --prefer-dist
 
 # Prepare generic compiler
-FROM php:8.1.25-cli-alpine3.16 as compile
+FROM php:8.3.3-cli-alpine3.19 as compile
 
-ENV PHP_SWOOLE_VERSION="v5.1.0" \
+ENV PHP_SWOOLE_VERSION="v5.1.2" \
   PHP_MONGODB_VERSION="1.16.1"
 
 RUN \
@@ -23,7 +23,10 @@ RUN \
   gcc \
   g++ \
   git \
-  openssl-dev
+  openssl-dev \
+  linux-headers \
+  curl-dev
+
   
 RUN docker-php-ext-install sockets
 
@@ -49,7 +52,7 @@ RUN \
   make && make install
 
 # Proxy
-FROM php:8.1.25-cli-alpine3.16 as final
+FROM php:8.3.3-cli-alpine3.19 as final
 
 ARG UTOPIA_DATA_API_VERSION
 ENV UTOPIA_DATA_API_VERSION=$UTOPIA_DATA_API_VERSION
@@ -68,6 +71,7 @@ RUN \
   && apk add --no-cache \
   libstdc++ \
   postgresql-dev \
+  linux-headers \
   && docker-php-ext-install sockets pdo_mysql pdo_pgsql \
   && apk del .deps \
   && rm -rf /var/cache/apk/*
@@ -79,8 +83,8 @@ COPY ./app /usr/local/app
 
 # Extensions and libraries
 COPY --from=composer /usr/local/src/vendor /usr/local/vendor
-COPY --from=swoole /usr/local/lib/php/extensions/no-debug-non-zts-20210902/swoole.so /usr/local/lib/php/extensions/no-debug-non-zts-20210902/
-COPY --from=mongodb /usr/local/lib/php/extensions/no-debug-non-zts-20210902/mongodb.so /usr/local/lib/php/extensions/no-debug-non-zts-20210902/
+COPY --from=swoole /usr/local/lib/php/extensions/no-debug-non-zts-20230831/swoole.so /usr/local/lib/php/extensions/no-debug-non-zts-20230831/
+COPY --from=mongodb /usr/local/lib/php/extensions/no-debug-non-zts-20230831/mongodb.so /usr/local/lib/php/extensions/no-debug-non-zts-20230831/
 
 RUN echo extension=swoole.so >> /usr/local/etc/php/conf.d/swoole.ini
 
