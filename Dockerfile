@@ -10,9 +10,9 @@ RUN composer install --ignore-platform-reqs --optimize-autoloader \
     --no-plugins --no-scripts --prefer-dist
 
 # Prepare generic compiler
-FROM php:8.1.25-cli-alpine3.16 as compile
+FROM php:8.3.3-cli-alpine3.19 as compile
 
-ENV PHP_SWOOLE_VERSION="v5.1.0" \
+ENV PHP_SWOOLE_VERSION="v5.1.2" \
   PHP_MONGODB_VERSION="1.16.1"
 
 RUN \
