@@ -17,27 +17,13 @@ ENV PHP_SWOOLE_VERSION="v5.1.2" \
 
 RUN \
   apk add --no-cache --virtual .deps \
-  linux-headers \
   make \
   automake \
   autoconf \
   gcc \
   g++ \
   git \
-  zlib-dev \
-  openssl-dev \
-  yaml-dev \
-  imagemagick \
-  imagemagick-dev \
-  libjpeg-turbo-dev \
-  jpeg-dev \
-  libjxl-dev \
-  libmaxminddb-dev \
-  zstd-dev \
-  brotli-dev \
-  lz4-dev \
-  curl-dev
-
+  openssl-dev
   
 RUN docker-php-ext-install sockets
 
