@@ -17,13 +17,27 @@ ENV PHP_SWOOLE_VERSION="v5.1.2" \
 
 RUN \
   apk add --no-cache --virtual .deps \
+  linux-headers \
   make \
   automake \
   autoconf \
   gcc \
   g++ \
   git \
-  openssl-dev
+  zlib-dev \
+  openssl-dev \
+  yaml-dev \
+  imagemagick \
+  imagemagick-dev \
+  libjpeg-turbo-dev \
+  jpeg-dev \
+  libjxl-dev \
+  libmaxminddb-dev \
+  zstd-dev \
+  brotli-dev \
+  lz4-dev \
+  curl-dev
+
   
 RUN docker-php-ext-install sockets
 
@@ -49,7 +63,7 @@ RUN \
   make && make install
 
 # Proxy
-FROM php:8.1.25-cli-alpine3.16 as final
+FROM php:8.3.3-cli-alpine3.19 as final
 
 ARG UTOPIA_DATA_API_VERSION
 ENV UTOPIA_DATA_API_VERSION=$UTOPIA_DATA_API_VERSION
@@ -79,8 +93,8 @@ COPY ./app /usr/local/app
 
 # Extensions and libraries
 COPY --from=composer /usr/local/src/vendor /usr/local/vendor
-COPY --from=swoole /usr/local/lib/php/extensions/no-debug-non-zts-20210902/swoole.so /usr/local/lib/php/extensions/no-debug-non-zts-20210902/
-COPY --from=mongodb /usr/local/lib/php/extensions/no-debug-non-zts-20210902/mongodb.so /usr/local/lib/php/extensions/no-debug-non-zts-20210902/
+COPY --from=swoole /usr/local/lib/php/extensions/no-debug-non-zts-20230831/swoole.so /usr/local/lib/php/extensions/no-debug-non-zts-20230831/
+COPY --from=mongodb /usr/local/lib/php/extensions/no-debug-non-zts-20230831/mongodb.so /usr/local/lib/php/extensions/no-debug-non-zts-20230831/
 
 RUN echo extension=swoole.so >> /usr/local/etc/php/conf.d/swoole.ini
 
