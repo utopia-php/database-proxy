@@ -23,7 +23,10 @@ RUN \
   gcc \
   g++ \
   git \
-  openssl-dev
+  openssl-dev \
+  linux-headers \
+  curl-dev
+
   
 RUN docker-php-ext-install sockets
 
@@ -68,6 +71,7 @@ RUN \
   && apk add --no-cache \
   libstdc++ \
   postgresql-dev \
+  linux-headers \
   && docker-php-ext-install sockets pdo_mysql pdo_pgsql \
   && apk del .deps \
   && rm -rf /var/cache/apk/*
