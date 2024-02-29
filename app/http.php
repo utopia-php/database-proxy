@@ -259,7 +259,7 @@ Http::error()
                 $version = 'UNKNOWN';
             }
 
-            $log->setNamespace("data-api");
+            $log->setNamespace("database-proxy");
             $log->setServer(\gethostname() !== false ? \gethostname() : null);
             $log->setVersion($version);
             $log->setType(Log::TYPE_ERROR);
