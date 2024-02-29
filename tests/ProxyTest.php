@@ -13,7 +13,7 @@ use Utopia\Fetch\Response;
 
 final class ProxyTest extends TestCase
 {
-    protected string $endpoint = 'http://data-api/v1';
+    protected string $endpoint = 'http://database-proxy/v1';
     protected string $secret = 'proxy-secret-key';
     protected string $namespace = 'my-namespace';
     protected string $database = 'appwrite';
@@ -84,7 +84,7 @@ final class ProxyTest extends TestCase
     public function testMock(): void
     {
         $correctEndpoint = $this->endpoint;
-        $this->endpoint = 'http://data-api/mock';
+        $this->endpoint = 'http://database-proxy/mock';
         $response = $this->call('GET', '/error');
         self::assertEquals(500, $response->getStatusCode());
         $this->endpoint = $correctEndpoint;

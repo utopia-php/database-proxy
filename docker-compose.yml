@@ -1,8 +1,8 @@
 version: '3.1'
 
 services:
-  data-api:
-    container_name: data-api
+  database-proxy:
+    container_name: database-proxy
     image: proxy-dev
     build:
       context: .
