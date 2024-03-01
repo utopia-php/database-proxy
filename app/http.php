@@ -84,6 +84,9 @@ $registry->set('pool', function () {
         };
     });
 
+    $pool->setRetrySleep(1); // in seconds
+    $pool->setRetryAttempts(30);
+
     return $pool;
 });
 
