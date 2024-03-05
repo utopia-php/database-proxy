@@ -118,13 +118,14 @@ Http::setResource('adapter', function (Request $request, Connection $adapterConn
     $namespace = $request->getHeader('x-utopia-namespace', '');
     $timeoutsString = $request->getHeader('x-utopia-timeouts', '[]');
     $database = $request->getHeader('x-utopia-database', '');
-    $roles = $request->getHeader('x-utopia-auth-roles', '');
+    $rolesString = $request->getHeader('x-utopia-auth-roles', '');
     $status = $request->getHeader('x-utopia-auth-status', '');
     $statusDefault = $request->getHeader('x-utopia-auth-status-default', '');
     $shareTables = $request->getHeader('x-utopia-share-tables', '');
     $tenant = $request->getHeader('x-utopia-tenant', '');
 
     $timeouts = \json_decode($timeoutsString, true);
+    $roles = \json_decode($rolesString, true);
 
     /**
      * @var Adapter $resource
