@@ -160,7 +160,7 @@ Http::setResource('adapter', function (Request $request, Connection $adapterConn
 
     $authorization->cleanRoles();
     $authorization->addRole('any');
-    foreach (\explode(',', $roles) as $role) {
+    foreach ($roles as $role) {
         $authorization->addRole($role);
     }
 
