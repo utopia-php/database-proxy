@@ -40,19 +40,14 @@ final class ProxyTest extends TestCase
             $body['params'] = \base64_encode(\serialize($body['params']));
         }
 
-        $timeouts = \json_encode(['*' => $this->timeout]);
-        if($timeouts == false) {
-            $timeouts = '';
-        }
-
         return Client::fetch($this->endpoint . $endpoint, [
             'x-utopia-secret' => $this->secret,
             'x-utopia-namespace' => $this->namespace,
             'x-utopia-database' => $this->database,
-            'x-utopia-auth-roles' => \implode(',', $roles),
+            'x-utopia-auth-roles' => \json_encode($roles) ?: '',
             'x-utopia-auth-status' => $skipAuth ? 'false' : 'true',
             'x-utopia-auth-status-default' => $this->defaultAuthStatus ? 'true' : 'false',
-            'x-utopia-timeouts' => $timeouts,
+            'x-utopia-timeouts' => \json_encode(['*' => $this->timeout]) ?: '',
             'content-type' => 'application/json'
         ], $method, $body);
     }
