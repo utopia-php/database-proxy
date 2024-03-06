@@ -234,14 +234,15 @@ Http::post('/v1/queries')
     });
 
 Http::shutdown()
-    ->inject('utopia')
-    ->inject('context')
-    ->action(function (Http $app, string $context) {
-        $connection = $app->getResource('adapterConnection', $context);
+    ->inject('adapterConnection')
+    ->action(function (Connection $adapterConnection) {
+        $adapterConnection->reclaim();
+    });
 
-        if (isset($connection)) {
-            $connection->reclaim();
-        }
+Http::error()
+    ->inject('adapterConnection')
+    ->action(function (Connection $adapterConnection) {
+        $adapterConnection->reclaim();
     });
 
 Http::error()
